@@ -102,6 +102,9 @@
     <string name="q_360">360p</string>
     <string name="q_audio">Solo audio</string>
     <string name="q_chica">La más chica</string>
+
+    <string name="copiar_ruta">Copiar ruta</string>
+    <string name="ruta_copiada">Ruta copiada al portapapeles</string>
     <string name="part_borrados">%1$d archivo(s) de corte borrado(s)</string>
     <string name="abrir">Abrir</string>
     <string name="compartir">Compartir</string>

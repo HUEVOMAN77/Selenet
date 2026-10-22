@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Glifo del launcher: flecha de descarga sobre bandeja, dentro del area segura (66dp) -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
+    <!-- Círculo contenedor interno estilo Material You -->
     <path
-        android:pathData="M54,24 L54,52"
+        android:pathData="M54,20 C35.2,20 20,35.2 20,54 C20,72.8 35.2,88 54,88 C72.8,88 88,72.8 88,54 C88,35.2 72.8,20 54,20 Z"
+        android:fillColor="@color/brand" />
+
+    <!-- Flecha de descarga moderna -->
+    <path
+        android:pathData="M54,34 L54,58"
         android:strokeColor="@color/brand_on"
-        android:strokeWidth="9"
+        android:strokeWidth="5"
         android:strokeLineCap="round" />
     <path
-        android:pathData="M37,38 L54,57 L71,38"
+        android:pathData="M43,49 L54,60 L65,49"
         android:strokeColor="@color/brand_on"
-        android:strokeWidth="9"
+        android:strokeWidth="5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
+
+    <!-- Bandeja / Linea de base -->
     <path
-        android:pathData="M33,72 L75,72"
+        android:pathData="M38,68 L70,68"
         android:strokeColor="@color/brand_on"
-        android:strokeWidth="9"
+        android:strokeWidth="5"
         android:strokeLineCap="round" />
 </vector>

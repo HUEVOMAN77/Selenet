@@ -45,6 +45,8 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         binding.queueList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.queueList.setAdapter(adapter);
 
+        binding.btnFmtAuto.setChecked(true);
+
         binding.btnAdd.setOnClickListener(v -> add());
         binding.btnClearPart.setOnClickListener(v -> clearParts());
         binding.btnCopyLog.setOnClickListener(v -> copyLog());
@@ -93,6 +95,14 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             return;
         }
         if (reading) {
+            return;
+        }
+        if (binding.btnFmtMp4.isChecked()) {
+            enqueue(url, Quality.MP4, Quality.label(requireContext(), Quality.MP4));
+            return;
+        }
+        if (binding.btnFmtMp3.isChecked()) {
+            enqueue(url, Quality.AUDIO, Quality.label(requireContext(), Quality.AUDIO));
             return;
         }
         readFormats(url);

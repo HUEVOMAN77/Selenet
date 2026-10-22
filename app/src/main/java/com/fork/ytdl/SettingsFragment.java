@@ -70,6 +70,16 @@ public class SettingsFragment extends Fragment {
             return true;
         });
 
+        binding.btnCopyDir.setOnClickListener(v -> {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                    requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null) {
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("ytdl-path",
+                        Storage.describe(requireContext())));
+                Toast.makeText(requireContext(), R.string.ruta_copiada, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         refreshDir();
         binding.lblQuality.setText(Quality.savedLabel(requireContext()));
         binding.lblEngineHint.setText(getString(R.string.motor_sugerencia));
