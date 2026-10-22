@@ -54,8 +54,7 @@ public class SettingsFragment extends Fragment {
         });
 
         refreshDir();
-        binding.lblQuality.setText(
-                Quality.label(requireContext(), Quality.saved(requireContext())));
+        binding.lblQuality.setText(Quality.savedLabel(requireContext()));
     }
 
     private void chooseTree(@Nullable Uri uri) {

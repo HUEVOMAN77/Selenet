@@ -70,7 +70,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> 
             b.histOpen.setOnClickListener(v -> show(context, task, false));
             b.histShare.setOnClickListener(v -> show(context, task, true));
             b.histAgain.setOnClickListener(v -> DownloadService.enqueue(
-                    context, task.url, Quality.saved(context)));
+                    context, task.url, task.fmt, task.label));
             b.histDelete.setOnClickListener(v -> {
                 Storage.delete(context, task.path);
                 HistoryDb.get(context).remove(task.id);
@@ -83,7 +83,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> 
             Uri uri = Storage.shareUri(context, task.path);
             Intent intent = new Intent(share ? Intent.ACTION_SEND : Intent.ACTION_VIEW)
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    .setType("video/*");
+                    .setType(Storage.typeOf(task.path));
             if (!share) {
                 intent.setData(uri);
             } else {

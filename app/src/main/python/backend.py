@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import threading
@@ -213,3 +214,150 @@ def run(task_id, url, outdir, fmt, sink):
         return True
     sink.onError('error', 'el motor termino sin dejar un archivo visible')
     return False
+
+
+# ------------------------------------------------------------------ calidades
+
+
+def _quality_of(item):
+    return item.get('br') or item.get('size') or 0
+
+
+def _best_by_height(items, wanted):
+    chosen = {}
+    for item in items:
+        if item['kind'] != wanted or item['height'] <= 0:
+            continue
+        current = chosen.get(item['height'])
+        if current is None or _quality_of(item) > _quality_of(current):
+            chosen[item['height']] = item
+    return chosen
+
+
+def _best_audio(items):
+    chosen = {}
+    for item in items:
+        if item['kind'] != 'audio':
+            continue
+        current = chosen.get(item['ext'])
+        if current is None or _quality_of(item) > _quality_of(current):
+            chosen[item['ext']] = item
+    ordered = []
+    for ext in ('m4a', 'mp3'):
+        item = chosen.pop(ext, None)
+        if item is not None:
+            ordered.append(item)
+    ordered.extend(sorted(chosen.values(), key=_quality_of, reverse=True))
+    return ordered
+
+
+_MERGE_HEIGHTS = (1080, 720, 480)
+
+
+def pick(items):
+    """Primero lo que se baja en un archivo; despues las alturas que piden PC."""
+    single = _best_by_height(items, 'video')
+    split = _best_by_height(items, 'merge')
+    rows = sorted(single.values(), key=lambda item: item['height'], reverse=True)
+    rows.extend(split[height] for height in _MERGE_HEIGHTS
+                if height in split and height not in single)
+    if not rows:
+        unknown = [item for item in items if item['kind'] == 'video' and item['height'] <= 0]
+        unknown.sort(key=_quality_of, reverse=True)
+        rows = unknown[:1]
+    audio = _best_audio(items)
+    if not audio:
+        strays = [item for item in items if item['kind'] == 'audio']
+        strays.sort(key=_quality_of, reverse=True)
+        audio = strays[:1]
+    return (rows[:6] + audio[:3])
+
+
+def _selector(fmt_id, index=0):
+    """youtube-dl sanitizea los format_id antes de compararlos con el selector."""
+    text = str(fmt_id) if fmt_id else str(index)
+    return re.sub(r'[\s,/+\[\]()]', '_', text)
+
+
+_AUDIO_EXTS = ('mp3', 'm4a', 'aac', 'ogg', 'opus', 'wav', 'flac', 'weba')
+
+
+def _kind_of(raw):
+    """'video' y 'audio' se bajan en un archivo; 'merge' necesita ffmpeg."""
+    vcodec = raw.get('vcodec')
+    acodec = raw.get('acodec')
+    ext = (raw.get('ext') or '').lower()
+    if vcodec is None or acodec is None:
+        # el extractor no informa codecs: es un archivo completo
+        return 'audio' if (not raw.get('height') and ext in _AUDIO_EXTS) else 'video'
+    if vcodec == 'none' and acodec != 'none':
+        return 'audio'
+    if acodec == 'none' and vcodec != 'none':
+        return 'merge'
+    if vcodec == 'none' and acodec == 'none':
+        return 'audio' if ext in _AUDIO_EXTS else 'video'
+    return 'video'
+
+
+def _item(raw, index=0):
+    return {
+        'id': _selector(raw.get('format_id'), index),
+        'kind': _kind_of(raw),
+        'height': int(raw.get('height') or 0),
+        'ext': (raw.get('ext') or '?'),
+        'fps': int(raw.get('fps') or 0),
+        'br': int(raw.get('tbr') or raw.get('vbr') or 0),
+        'size': int(raw.get('filesize') or raw.get('filesize_approx') or 0),
+    }
+
+
+def _flatten(info):
+    """Extractors que devuelven un solo stream suelto en vez de una lista."""
+    if not info.get('url'):
+        return []
+    return [_item(info, 0)]
+
+
+def formats(url):
+    """JSON con los formatos que se pueden bajar en un solo archivo, sin ffmpeg."""
+    options = {
+        'quiet': True,
+        'noplaylist': True,
+        'skip_download': True,
+        'socket_timeout': 20,
+        'retries': 0,
+    }
+    try:
+        with youtube_dl.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Abort:
+        return json.dumps({'ok': False, 'kind': 'error', 'error': 'cancelado'})
+    except DownloadError as err:
+        return json.dumps({'ok': False, 'kind': _classify(str(err)), 'error': str(err)})
+    except Exception as err:
+        return json.dumps({'ok': False,
+                           'kind': _classify('%s: %s' % (type(err).__name__, err)),
+                           'error': str(err)})
+
+    while info and 'entries' in info:
+        entries = [entry for entry in (info.get('entries') or []) if entry]
+        info = entries[0] if entries else None
+
+    if info is None:
+        return json.dumps({'ok': False, 'kind': 'unavailable', 'error': 'respuesta vacia'})
+
+    items = []
+    for position, raw in enumerate(info.get('formats') or []):
+        if raw is None:
+            continue
+        items.append(_item(raw, position))
+
+    if not items:
+        items = _flatten(info)
+
+    return json.dumps({
+        'ok': True,
+        'title': info.get('title') or '',
+        'duration': int(info.get('duration') or 0),
+        'formats': pick(items),
+    })

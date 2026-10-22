@@ -1,5 +1,7 @@
 package com.fork.ytdl;
 
+import android.content.Context;
+
 import org.json.JSONObject;
 
 import java.util.UUID;
@@ -18,6 +20,7 @@ public class Task {
     public final String url;
     public String title;
     public String fmt;
+    public String label;
     public String state = QUEUED;
     public int percent;
     public String speed = "";
@@ -41,6 +44,7 @@ public class Task {
         this.url = json.optString("url", "");
         this.title = json.optString("title", null);
         this.fmt = json.optString("fmt", "best");
+        this.label = json.optString("label", null);
         this.state = json.optString("state", QUEUED);
         this.path = json.optString("path", null);
         this.tmp = json.optString("tmp", null);
@@ -55,12 +59,21 @@ public class Task {
             json.put("id", id).put("url", url).put("fmt", fmt).put("state", state)
                     .put("attempts", attempts).put("bytes", bytes);
             if (title != null) json.put("title", title);
+            if (label != null) json.put("label", label);
             if (path != null) json.put("path", path);
             if (tmp != null) json.put("tmp", tmp);
             if (finishedAt > 0) json.put("finishedAt", finishedAt);
         } catch (Exception ignored) {
         }
         return json;
+    }
+
+    /** Como se muestra la calidad elegida; si no hay etiqueta, la que corresponda al spec. */
+    public String qualityLabel(Context context) {
+        if (label != null && !label.isEmpty()) {
+            return label;
+        }
+        return Quality.label(context, fmt);
     }
 
     public boolean isLive() {

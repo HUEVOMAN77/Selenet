@@ -27,20 +27,21 @@ public class HistoryDb extends SQLiteOpenHelper {
     }
 
     private HistoryDb(Context context) {
-        super(context, NAME, null, 1);
+        super(context, NAME, null, 2);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE + " ("
-                + "id TEXT PRIMARY KEY, url TEXT, title TEXT, fmt TEXT, path TEXT, "
+                + "id TEXT PRIMARY KEY, url TEXT, title TEXT, fmt TEXT, label TEXT, path TEXT, "
                 + "bytes INTEGER, finished_at INTEGER)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int from, int to) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE);
-        onCreate(db);
+        if (from < 2) {
+            db.execSQL("ALTER TABLE " + TABLE + " ADD COLUMN label TEXT");
+        }
     }
 
     public void put(Task task) {
@@ -49,6 +50,7 @@ public class HistoryDb extends SQLiteOpenHelper {
         values.put("url", task.url);
         values.put("title", task.title);
         values.put("fmt", task.fmt);
+        values.put("label", task.label);
         values.put("path", task.path);
         values.put("bytes", task.bytes);
         values.put("finished_at", task.finishedAt);
@@ -71,6 +73,7 @@ public class HistoryDb extends SQLiteOpenHelper {
                             .put("url", str(cursor, "url"))
                             .put("title", str(cursor, "title"))
                             .put("fmt", str(cursor, "fmt"))
+                            .put("label", str(cursor, "label"))
                             .put("state", Task.DONE)
                             .put("path", str(cursor, "path"))
                             .put("bytes", cursor.getLong(cursor.getColumnIndexOrThrow("bytes")))

@@ -13,6 +13,7 @@ public final class Quality {
 
     private static final String PREF = "ajustes";
     private static final String KEY = "calidad";
+    private static final String KEY_LABEL = "calidad_label";
 
     private Quality() {
     }
@@ -39,8 +40,20 @@ public final class Quality {
                 .getString(KEY, BEST);
     }
 
+    /** La etiqueta visible de esa ultima eleccion. */
+    public static String savedLabel(Context context) {
+        String saved = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+                .getString(KEY_LABEL, null);
+        return saved == null ? label(context, saved(context)) : saved;
+    }
+
     public static void save(Context context, String spec) {
         context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
                 .edit().putString(KEY, spec).apply();
+    }
+
+    public static void save(Context context, String spec, String text) {
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+                .edit().putString(KEY, spec).putString(KEY_LABEL, text).apply();
     }
 }

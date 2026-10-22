@@ -56,7 +56,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             this.task = task;
             Context context = b.getRoot().getContext();
             b.itemTitle.setText(task.displayName());
-            b.itemSubtitle.setText(task.url + " · " + Quality.label(context, task.fmt));
+            b.itemSubtitle.setText(task.url + " · " + task.qualityLabel(context));
             b.itemProgress.setProgress(Math.max(0, Math.min(100, task.percent)));
             b.itemState.setText(stateLabel(context, task));
             b.itemState.setTextColor(stateColor(context, task));

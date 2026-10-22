@@ -259,12 +259,25 @@ public final class Storage {
                 .getAbsolutePath();
     }
 
-    private static String mimeOf(String name) {
+    public static String mimeOf(String name) {
         String lower = name.toLowerCase(Locale.US);
-        if (lower.matches(".*\\.(m4a|mp3|aac|ogg|opus)$")) {
+        if (lower.matches(".*\\.(m4a|mp3|aac|wav|flac)$")) {
             return "audio/mp4";
         }
+        if (lower.matches(".*\\.(ogg|opus)$")) {
+            return "audio/ogg";
+        }
+        if (lower.matches(".*\\.(webm|mkv)$")) {
+            return "video/webm";
+        }
         return "video/mp4";
+    }
+
+    /** Tipo generico para elegir app de reproduccion, segun la terminacion de la ruta. */
+    public static String typeOf(String path) {
+        String lower = path == null ? "" : path.toLowerCase(Locale.US);
+        return lower.matches(".*\\.(m4a|mp3|aac|ogg|opus|wav|flac)(\\?.*)?$")
+                ? "audio/*" : "video/*";
     }
 
     private static boolean isDoc(String path) {

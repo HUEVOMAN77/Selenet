@@ -9,8 +9,13 @@ public final class Errors {
     }
 
     public static String message(Context context, Task task) {
-        String kind = task.errorKind == null ? "error" : task.errorKind;
-        switch (kind) {
+        return reason(context, task.errorKind, task.errorDetail);
+    }
+
+    /** Texto en espanol para un tipo de error del motor. */
+    public static String reason(Context context, String kind, String detail) {
+        String safe = kind == null ? "error" : kind;
+        switch (safe) {
             case "private":
                 return context.getString(R.string.err_privado);
             case "unavailable":
@@ -26,8 +31,7 @@ public final class Errors {
             case "reintentos":
                 return context.getString(R.string.err_reintentos);
             default:
-                String detail = task.errorDetail == null ? kind : task.errorDetail;
-                return context.getString(R.string.err_generico, detail);
+                return context.getString(R.string.err_generico, detail == null ? safe : detail);
         }
     }
 }

@@ -50,6 +50,14 @@ public final class Engine {
                 .toBoolean();
     }
 
+    /** JSON con los formatos leibles de una URL; lo llama un hilo de fondo. */
+    public static String formats(String url) {
+        if (backend == null) {
+            throw new IllegalStateException("motor sin iniciar");
+        }
+        return backend.callAttr("formats", url).toString();
+    }
+
     public static void request(String taskId, String action) {
         if (backend == null) {
             return;

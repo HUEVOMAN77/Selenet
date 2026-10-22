@@ -93,8 +93,13 @@ public class DownloadService extends Service {
     // ---------------------------------------------------------------- acciones
 
     public static void enqueue(Context context, String url, String fmt) {
+        enqueue(context, url, fmt, null);
+    }
+
+    public static void enqueue(Context context, String url, String fmt, String label) {
         use(context);
         Task task = new Task(url, fmt == null ? "best" : fmt);
+        task.label = label;
         synchronized (QUEUE) {
             QUEUE.add(task);
         }

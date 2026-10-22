@@ -4,6 +4,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +20,17 @@ import com.fork.ytdl.databinding.FragmentDownloadBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DownloadFragment extends Fragment implements DownloadService.Listener {
 
     private FragmentDownloadBinding binding;
     private final QueueAdapter adapter = new QueueAdapter();
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private static final ExecutorService THREADS = Executors.newSingleThreadExecutor();
     private static String asked;
+    private boolean reading;
 
     @Nullable
     @Override
@@ -85,9 +92,113 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             Toast.makeText(requireContext(), R.string.link_invalido, Toast.LENGTH_SHORT).show();
             return;
         }
-        DownloadService.enqueue(requireContext(), url, Quality.saved(requireContext()));
+        if (reading) {
+            return;
+        }
+        readFormats(url);
+    }
+
+    /** Lee los formatos del motor y muestra los que se pueden bajar sin merge. */
+    private void readFormats(String url) {
+        reading = true;
+        Context app = requireContext().getApplicationContext();
+        binding.btnAdd.setEnabled(false);
+        setStatus(app.getString(R.string.fmt_obteniendo), true);
+        THREADS.execute(() -> {
+            Formats.Result result;
+            try {
+                Engine.init(app);
+                result = Formats.parse(Engine.formats(url));
+            } catch (Exception e) {
+                Logs.append(null, "formatos: " + e);
+                result = Formats.Result.fail("error");
+            }
+            final Formats.Result found = result;
+            main.post(() -> {
+                reading = false;
+                if (binding == null) {
+                    return;
+                }
+                binding.btnAdd.setEnabled(true);
+                setStatus("", false);
+                if (found.ok) {
+                    showQualities(url, found);
+                } else {
+                    Context context = requireContext();
+                    Toast.makeText(context, getString(R.string.fmt_fallo,
+                                    Errors.reason(context, found.errorKind, null)),
+                            Toast.LENGTH_LONG).show();
+                    enqueue(url, Quality.saved(context), Quality.savedLabel(context));
+                }
+            });
+        });
+    }
+
+    private void showQualities(String url, Formats.Result result) {
+        Context context = requireContext();
+        String[] labels = new String[result.options.size()];
+        String saved = Quality.saved(context);
+        for (int i = 0; i < labels.length; i++) {
+            Formats.Option option = result.options.get(i);
+            labels[i] = option.label(context) + (option.id.equals(saved) ? "  ✓" : "");
+        }
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.fmt_titulo)
+                .setMessage(header(context, result))
+                .setItems(labels, (dialog, which) -> choose(url, result.options.get(which)))
+                .setNegativeButton(R.string.q_usar_ultima,
+                        (dialog, which) -> enqueue(url, Quality.saved(context),
+                                Quality.savedLabel(context)))
+                .show();
+    }
+
+    private void choose(String url, Formats.Option option) {
+        Context context = requireContext();
+        if (option.needsMerge()) {
+            Toast.makeText(context, R.string.fmt_requiere_pc_detalle, Toast.LENGTH_LONG).show();
+            return;
+        }
+        enqueue(url, option.id, option.shortLabel(context));
+    }
+
+    private void enqueue(String url, String fmt, String label) {
+        Context context = requireContext();
+        Quality.save(context, fmt, label);
+        DownloadService.enqueue(context, url, fmt, label);
         binding.urlInput.setText("");
-        Toast.makeText(requireContext(), R.string.agregada, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, R.string.agregada, Toast.LENGTH_SHORT).show();
+    }
+
+    private static String header(Context context, Formats.Result result) {
+        StringBuilder text = new StringBuilder();
+        if (!result.title.isEmpty()) {
+            text.append(result.title);
+        }
+        if (result.seconds > 0) {
+            if (text.length() > 0) {
+                text.append('\n');
+            }
+            text.append(context.getString(R.string.fmt_duracion, clock(result.seconds)));
+        }
+        return text.toString();
+    }
+
+    private static String clock(int total) {
+        int minutes = total / 60;
+        int seconds = total % 60;
+        if (minutes >= 60) {
+            return String.format(java.util.Locale.US, "%d:%02d:%02d", minutes / 60,
+                    minutes % 60, seconds);
+        }
+        return String.format(java.util.Locale.US, "%d:%02d", minutes, seconds);
+    }
+
+    private void setStatus(String text, boolean visible) {
+        if (binding == null) {
+            return;
+        }
+        binding.statusRow.setVisibility(visible ? View.VISIBLE : View.GONE);
+        binding.statusText.setText(text);
     }
 
     /** Si hay un link en el portapapeles lo ofrece, pero no descarga nada solo. */

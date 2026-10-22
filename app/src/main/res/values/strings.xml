@@ -68,9 +68,15 @@
 
     <string name="fmt_titulo">Elegí calidad</string>
     <string name="fmt_requiere_pc">Requiere PC</string>
+    <string name="fmt_requiere_pc_detalle">Esa calidad viene sin audio: hay que juntarla con ffmpeg en la PC.</string>
     <string name="fmt_solo_audio">Solo audio</string>
     <string name="fmt_obteniendo">Leyendo formatos…</string>
     <string name="fmt_fallo">No pude leer los formatos: %1$s</string>
+    <string name="fmt_duracion">Duración: %1$s</string>
+    <string name="fmt_altura">%1$dp</string>
+    <string name="fmt_normal">Calidad normal (%1$s)</string>
+    <string name="fmt_sin_medida">tamaño aprox. desconocido</string>
+    <string name="q_usar_ultima">Usar la última calidad</string>
 
     <string name="guardado">Guardado en tu carpeta</string>
 
