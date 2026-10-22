@@ -16,6 +16,9 @@ public class Task {
 
     public static final int MAX_RETRIES = 3;
 
+    public static final String STAGE_DOWNLOAD = "download";
+    public static final String STAGE_EXTRACT = "extract";
+
     public final String id;
     public final String url;
     public String title;
@@ -32,6 +35,12 @@ public class Task {
     public int attempts;
     public long bytes;
     public long finishedAt;
+
+    /** Etapa visible de una descarga de audio; null mientras es una descarga comun. */
+    public String stage;
+
+    /** MP4 temporal que quedo disponible cuando la extraccion fallo. */
+    public String fallback;
 
     public Task(String url, String fmt) {
         this.id = UUID.randomUUID().toString();
@@ -53,6 +62,7 @@ public class Task {
         this.errorDetail = json.optString("errorDetail", null);
         this.bytes = json.optLong("bytes", 0);
         this.finishedAt = json.optLong("finishedAt", 0);
+        this.fallback = json.optString("fallback", null);
     }
 
     public JSONObject toJson() {
@@ -67,6 +77,7 @@ public class Task {
             if (errorKind != null) json.put("errorKind", errorKind);
             if (errorDetail != null) json.put("errorDetail", errorDetail);
             if (finishedAt > 0) json.put("finishedAt", finishedAt);
+            if (fallback != null) json.put("fallback", fallback);
         } catch (Exception ignored) {
         }
         return json;

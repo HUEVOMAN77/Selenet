@@ -75,7 +75,9 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             if (Task.PAUSED.equals(task.state)) {
                 action = context.getString(R.string.btn_reanudar);
             } else if (Task.ERROR.equals(task.state)) {
-                action = context.getString(R.string.btn_reintentar);
+                // si quedo el MP4 de reserva, el boton ofrece guardarlo en vez de reintentar
+                action = context.getString(task.fallback == null
+                        ? R.string.btn_reintentar : R.string.btn_guardar_mp4_corto);
             } else {
                 action = context.getString(R.string.btn_pausar);
             }
@@ -91,6 +93,15 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
                 showError(context);
                 return true;
             });
+        }
+
+        /** Guarda la reserva (el MP4 que bajo el modo audio) y avisa del resultado. */
+        private void saveFallback(Context context) {
+            if (DownloadService.saveFallback(context, task)) {
+                Toast.makeText(context, R.string.mp4_guardado, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, R.string.err_sin_destino, Toast.LENGTH_LONG).show();
+            }
         }
 
         /** Detalle tecnico del fallo, para copiar o pegar en un foro. */
@@ -113,22 +124,31 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
                 text.append("\n").append(context.getString(R.string.err_intentos,
                         task.attempts));
             }
-            new MaterialAlertDialogBuilder(context)
+            MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.err_detalle_titulo)
                     .setMessage(text.toString())
-                    .setPositiveButton(android.R.string.ok, null)
-                    .setNeutralButton(R.string.btn_copiar_detalle, (dialog, which) -> {
+                    .setNeutralButton(R.string.btn_copiar_detalle, (d, which) -> {
                         ClipboardManager clipboard = (ClipboardManager)
                                 context.getSystemService(Context.CLIPBOARD_SERVICE);
                         clipboard.setPrimaryClip(
                                 ClipData.newPlainText("ytdl", text.toString()));
                         Toast.makeText(context, R.string.log_copiado, Toast.LENGTH_SHORT).show();
-                    })
-                    .show();
+                    });
+            if (task.fallback != null) {
+                dialog.setPositiveButton(R.string.btn_guardar_mp4,
+                        (d, which) -> saveFallback(context));
+            } else {
+                dialog.setPositiveButton(android.R.string.ok, null);
+            }
+            dialog.show();
         }
 
         private void act() {
             Context context = b.getRoot().getContext();
+            if (Task.ERROR.equals(task.state) && task.fallback != null) {
+                saveFallback(context);
+                return;
+            }
             if (Task.PAUSED.equals(task.state) || Task.ERROR.equals(task.state)) {
                 DownloadService.resume(context, task);
             } else {
@@ -142,7 +162,10 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             return context.getString(R.string.estado_completada);
         }
         if (Task.RUNNING.equals(task.state)) {
-            return context.getString(R.string.estado_descargando) + " " + task.percent + "%";
+            String stage = Task.STAGE_EXTRACT.equals(task.stage)
+                    ? context.getString(R.string.estado_extrayendo)
+                    : context.getString(R.string.estado_descargando);
+            return stage + " " + task.percent + "%";
         }
         if (Task.PAUSED.equals(task.state)) {
             return context.getString(R.string.estado_pausada) + " " + task.percent + "%";
@@ -212,6 +235,9 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
     }
 
     private static int actionIcon(Task task) {
+        if (Task.ERROR.equals(task.state) && task.fallback != null) {
+            return R.drawable.ic_download;
+        }
         if (Task.PAUSED.equals(task.state) || Task.ERROR.equals(task.state)) {
             return R.drawable.ic_state_running;
         }

@@ -17,7 +17,7 @@
     <string name="seccion_log">Actividad del motor</string>
     <string name="fmt_todos">Todos</string>
     <string name="fmt_video">Solo MP4</string>
-    <string name="fmt_audio">Solo audio</string>
+    <string name="fmt_audio">Solo audio (m4a)</string>
 
     <string name="hint_url">Pegá el link del video</string>
     <string name="btn_agregar">Agregar a la cola</string>
@@ -31,7 +31,8 @@
     <string name="log_copiado">Log copiado al portapapeles</string>
 
     <string name="estado_en_espera">En espera</string>
-    <string name="estado_descargando">Descargando</string>
+    <string name="estado_descargando">Descargando…</string>
+    <string name="estado_extrayendo">Extrayendo audio…</string>
     <string name="estado_pausada">Pausada</string>
     <string name="estado_completada">Completada</string>
     <string name="estado_error">Error</string>
@@ -96,6 +97,14 @@
     <string name="err_bloqueado">YouTube bloqueó esta descarga (403). No es tu conexión: el motor pidió un formato que el sitio ya no entrega sin verificación. Probá con otra calidad, esperá unos minutos y reintentá, o actualizá el motor desde Ajustes.</string>
     <string name="err_espacio">No hay espacio suficiente en el almacenamiento.</string>
     <string name="err_formato">No encontré un formato que se pueda bajar sin merge.</string>
+    <string name="err_sin_audio">Este video no tiene audio compatible: Android no le encontró una pista de audio que se pueda escribir en un m4a. Probá bajándolo en modo MP4, que trae el audio adentro.</string>
+    <string name="err_extraccion">La descarga del video salió bien, pero no se pudo separar el audio. Podés quedarte con el MP4 completo.</string>
+    <string name="err_audio_vacio">El audio quedó vacío: el archivo final pesa 0 bytes. Bajalo en modo MP4 si el problema se repite.</string>
+    <string name="err_cancelado">Se canceló la descarga y no quedó nada en la carpeta.</string>
+    <string name="btn_guardar_mp4">Guardar el MP4 completo</string>
+    <string name="btn_guardar_mp4_corto">Guardar MP4</string>
+    <string name="mp4_guardado">MP4 guardado con el audio adentro</string>
+    <string name="err_sin_destino">No se pudo escribir en la carpeta de destino; fijá en Ajustes que haya lugar disponible.</string>
     <string name="err_generico">Fallo: %1$s</string>
     <string name="err_reintentos">Se agotaron los 3 reintentos.</string>
     <string name="err_sin_clientes">El motor de ytdl-org no sabe cambiar de cliente de YouTube, así que volvería a fallar con el 403. Queda activo el motor que trae la app.</string>
@@ -122,7 +131,7 @@
     <string name="q_mejor">Mejor (automático)</string>
     <string name="q_mp4">MP4 (compatible)</string>
     <string name="q_360">360p</string>
-    <string name="q_audio">Solo audio</string>
+    <string name="q_audio">Solo audio (m4a)</string>
     <string name="q_chica">La más chica</string>
 
     <string name="copiar_ruta">Copiar ruta</string>

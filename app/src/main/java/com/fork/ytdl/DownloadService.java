@@ -34,6 +34,8 @@ public class DownloadService extends Service {
     private static final int NOTIF_ID = 4711;
     private static final long[] BACKOFF = {2000, 5000, 10000};
     private static final String PREFS = "cola";
+    /** Hasta ahi llega la barra mientras se baja el MP4 temporal del modo audio. */
+    private static final int DOWNLOAD_CEILING = 90;
 
     private static final List<Task> QUEUE = new ArrayList<>();
     private static final List<Listener> LISTENERS = new ArrayList<>();
@@ -192,7 +194,7 @@ public class DownloadService extends Service {
         Engine.request(task.id, action);
     }
 
-    /** Borra los .part/.ytdl que no pertenecen a una descarga activa o pausada. */
+    /** Borra los .part/.ytdl y los temporales de audio que ya no pertenecen a ninguna tarea. */
     private static int cleanupOrphans() {
         if (app == null) {
             return 0;
@@ -202,31 +204,43 @@ public class DownloadService extends Service {
         for (Task task : snapshot()) {
             if (task.isLive() && task.tmp != null) {
                 owned.add(task.tmp);
+                // el .ytdl del corte en curso es hermano del .part: sin él no se reanuda
+                owned.add(task.tmp + ".ytdl");
+            }
+            if (task.path != null) {
+                owned.add(task.path);
+            }
+            if (task.fallback != null) {
+                owned.add(task.fallback);
             }
         }
         int deleted = 0;
         File[] files = dir.listFiles();
-        if (files == null) {
-            return 0;
-        }
-        for (File file : files) {
-            String name = file.getName();
-            if (!name.endsWith(".part") && !name.endsWith(".ytdl")) {
-                continue;
-            }
-            String stem = name.replace(".ytdl", "").replace(".part", "");
-            boolean keep = false;
-            for (String path : owned) {
-                if (path.contains(stem)) {
-                    keep = true;
+        if (files != null) {
+            for (File file : files) {
+                String name = file.getName();
+                if (!name.endsWith(".part") && !name.endsWith(".ytdl")) {
+                    continue;
+                }
+                String stem = name.replace(".ytdl", "").replace(".part", "");
+                boolean keep = false;
+                for (String path : owned) {
+                    if (path.contains(stem)) {
+                        keep = true;
+                    }
+                }
+                if (!keep && file.delete()) {
+                    deleted++;
+                    Logs.append(null, "borrado huerfano: " + name);
                 }
             }
-            if (!keep && file.delete()) {
-                deleted++;
-                Logs.append(null, "borrado huerfano: " + name);
-            }
         }
-        return deleted;
+        // el modo audio escribe su MP4 en la caché: lo que ninguna tarea ya reclama se tira
+        int cache = Storage.cleanAudioCache(app, owned);
+        if (cache > 0) {
+            Logs.append(null, "temporales de audio borrados: " + cache);
+        }
+        return deleted + cache;
     }
 
     // ---------------------------------------------------------------- servicio
@@ -343,6 +357,7 @@ public class DownloadService extends Service {
         task.errorKind = null;
         task.errorDetail = null;
         task.percent = 0;
+        task.fallback = null;
         Logs.append(task, "iniciando (" + (task.attempts + 1) + ") " + task.url);
         persist();
         notifyUi();
@@ -350,14 +365,18 @@ public class DownloadService extends Service {
         Sink sink = new Sink(task);
         boolean ok;
         try {
-            ok = Boolean.TRUE.equals(
-                    Engine.runResult(task.id, task.url, Storage.engineDir(this), task.fmt, sink));
+            ok = Quality.isAudio(task.fmt)
+                    ? runAudio(task, sink)
+                    : Boolean.TRUE.equals(
+                            Engine.runResult(task.id, task.url, Storage.engineDir(this),
+                                    task.fmt, sink));
         } catch (Exception e) {
             ok = false;
             task.errorKind = "error";
             task.errorDetail = String.valueOf(e.getMessage());
             Logs.append(task, "excepcion: " + e);
         }
+        task.stage = null;
 
         String stop = STOPS.remove(task.id);
         if (stop != null) {
@@ -373,7 +392,11 @@ public class DownloadService extends Service {
             task.finishedAt = System.currentTimeMillis();
             task.path = task.path == null ? null : Storage.publish(this, task.path);
             task.bytes = Storage.size(this, task.path);
-            Storage.scan(this, task.path);
+            // el audio se registra como audio en MediaStore; si no se puede, escaneo normal
+            if (!Quality.isAudio(task.fmt)
+                    || !Storage.registerAudio(this, fileOf(task.path))) {
+                Storage.scan(this, task.path);
+            }
             HistoryDb.get(this).put(task);
             Logs.append(task, "terminada: " + Storage.nameOf(task.path));
         } else {
@@ -442,6 +465,10 @@ public class DownloadService extends Service {
 
     private class Sink {
         private final Task task;
+        /** Tope de la barra: 100 lo de siempre, 90 mientras se baja el temporal de audio. */
+        private int ceiling = 100;
+        /** El archivo que dejo el motor; en el modo audio es el MP4 temporal de la caché. */
+        private File produced;
 
         Sink(Task task) {
             this.task = task;
@@ -458,18 +485,26 @@ public class DownloadService extends Service {
 
         public void onProgress(int percent, String speed, String eta,
                                String filename, String tmpfilename) {
-            task.percent = percent;
+            task.percent = percent * ceiling / 100;
             task.speed = speed == null ? "" : speed;
             task.eta = eta == null ? "" : eta;
-            if (filename != null) task.path = filename;
+            // en el modo audio el archivo vive en la caché: todavia no es la ruta de salida
+            if (filename != null && ceiling == 100) task.path = filename;
             if (tmpfilename != null) task.tmp = tmpfilename;
             notifyUi();
         }
 
         public void onDone(String path, long bytes) {
+            produced = new File(path);
             task.path = path;
             task.bytes = bytes;
             task.tmp = null;
+            if (ceiling < 100) {
+                // el temporal vive en la caché: task.tmp lo marca como archivo propio,
+                // asi "Limpiar cortadas" no lo borra mientras la extraccion lo esta usando
+                task.path = null;
+                task.tmp = path;
+            }
         }
 
         public void onError(String kind, String detail) {
@@ -662,5 +697,161 @@ public class DownloadService extends Service {
             Thread.sleep(millis);
         } catch (InterruptedException ignored) {
         }
+    }
+
+    // ---------------------------------------------------------------- modo audio
+
+    /**
+     * "Solo audio" sin ffmpeg: baja un MP4 progresivo a la caché (ocupa de 0% a 90% de la
+     * barra) y después MediaExtractor/MediaMuxer sacan la pista de audio (90% a 100%).
+     * El destino del usuario nunca ve el temporal; si algo falla, el temporal se borra o
+     * queda a mano como reserva para "Guardar el MP4 completo".
+     */
+    private boolean runAudio(Task task, Sink sink) {
+        File cache = Storage.audioCache(this);
+        task.stage = Task.STAGE_DOWNLOAD;
+        sink.ceiling = DOWNLOAD_CEILING;
+        notifyUi();
+
+        boolean down;
+        try {
+            down = Boolean.TRUE.equals(Engine.runResult(task.id, task.url, cache, task.fmt,
+                    sink, "audio-" + task.id));
+        } catch (Exception e) {
+            task.errorKind = "error";
+            task.errorDetail = String.valueOf(e.getMessage());
+            Logs.append(task, "excepcion en la descarga de audio: " + e);
+            return false;
+        }
+        if (!down || STOPS.containsKey(task.id)) {
+            return false;   // el motor ya piso kind/detail, o pidieron cortar
+        }
+        File source = sink.produced;
+        if (source == null || !source.isFile() || source.length() <= 0) {
+            task.errorKind = "sin_destino";
+            task.errorDetail = "el temporal de audio no quedo en " + cache;
+            Logs.append(task, "temporal de audio ausente o vacio");
+            return false;
+        }
+
+        task.stage = Task.STAGE_EXTRACT;
+        task.percent = DOWNLOAD_CEILING;
+        task.speed = "";
+        task.eta = "";
+        notifyUi();
+        String base = Storage.safeBase(task.title == null ? source.getName() : task.title);
+        File output = Storage.unique(Storage.engineDir(this), base, "m4a");
+        // se escribe con .part al lado: si algo sale mal el resto se barre como cortada, y
+        // mientras vive es el "tmp" de la tarea, asi "Limpiar cortadas" no lo toca
+        File target = new File(output.getAbsolutePath() + ".part");
+        task.tmp = target.getAbsolutePath();
+        // el MP4 de la caché pasa a ser reserva: si la extraccion falla se puede guardar tal cual
+        task.fallback = source.getAbsolutePath();
+        try {
+            String mime = AudioRemux.extract(source, target, new AudioRemux.Watch() {
+                @Override
+                public void onStage(int percent) {
+                    task.percent = Math.min(99, DOWNLOAD_CEILING + percent / 10);
+                    notifyUi();
+                }
+
+                @Override
+                public boolean cancelled() {
+                    return STOPS.containsKey(task.id);
+                }
+            });
+            long size = target.length();
+            if (size <= 0) {
+                deleteQuietly(target);
+                task.errorKind = "audio_vacio";
+                task.errorDetail = "el m4a salio de 0 bytes";
+                Logs.append(task, "extraccion sin muestras");
+                return false;
+            }
+            if (!target.renameTo(output)) {
+                deleteQuietly(target);
+                task.errorKind = "sin_destino";
+                task.errorDetail = "no se pudo dejar " + output.getName() + " en el destino";
+                Logs.append(task, "sin destino para el m4a");
+                return false;
+            }
+            task.path = output.getAbsolutePath();
+            task.bytes = size;
+            task.tmp = null;
+            task.fallback = null;
+            deleteQuietly(source);
+            Logs.append(task, "audio " + mime + " separado en " + output.getName());
+            return true;
+        } catch (AudioRemux.Failure failure) {
+            deleteQuietly(target);   // el m4a a medio escribir no sirve
+            task.errorKind = failure.kind;
+            task.errorDetail = failure.getMessage();
+            task.tmp = null;
+            Logs.append(task, "extraccion (" + failure.kind + "): " + failure.getMessage());
+            if (STOPS.containsKey(task.id)) {
+                // cortaron de verdad: no queda nada en la caché
+                task.fallback = null;
+                deleteQuietly(source);
+            }
+            return false;
+        } finally {
+            task.stage = null;
+        }
+    }
+
+    private static void deleteQuietly(File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        if (!file.delete()) {
+            Logs.append(null, "no se pudo borrar " + file.getName());
+        }
+    }
+
+    /** File del resultado final, o null si ya es un documento SAF (ahi MediaStore no aplica). */
+    private static java.io.File fileOf(String path) {
+        return path == null || path.startsWith("content://") ? null : new File(path);
+    }
+
+    /**
+     * Acepta la reserva: sube el MP4 temporal que dejo el modo audio al destino del usuario
+     * con el nombre del video, para no perder la descarga cuando el audio no se pudo separar.
+     */
+    public static boolean saveFallback(Context context, Task task) {
+        use(context);
+        File source = task.fallback == null ? null : new File(task.fallback);
+        if (source == null || !source.isFile() || source.length() <= 0) {
+            task.fallback = null;
+            return false;
+        }
+        String base = Storage.safeBase(task.title == null ? source.getName() : task.title);
+        File staged = Storage.unique(Storage.engineDir(context), base,
+                extension(source.getName()));
+        if (!Storage.move(source, staged)) {
+            return false;   // la reserva sigue en la caché; el que llama avisa del fallo
+        }
+        task.fallback = null;
+        task.path = Storage.publish(context, staged.getAbsolutePath());
+        task.bytes = Storage.size(context, task.path);
+        task.percent = 100;
+        task.state = Task.DONE;
+        task.errorKind = null;
+        task.errorDetail = null;
+        task.finishedAt = System.currentTimeMillis();
+        Storage.scan(context, task.path);
+        HistoryDb.get(context).put(task);
+        Logs.append(task, "reserva guardada: " + Storage.nameOf(task.path));
+        synchronized (QUEUE) {
+            QUEUE.remove(task);
+        }
+        Logs.forget(task);
+        persist();
+        notifyUi();
+        return true;
+    }
+
+    private static String extension(String name) {
+        int dot = name.lastIndexOf('.');
+        return dot > 0 ? name.substring(dot + 1) : "mp4";
     }
 }

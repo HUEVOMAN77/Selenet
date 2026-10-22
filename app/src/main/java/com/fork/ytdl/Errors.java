@@ -34,6 +34,16 @@ public final class Errors {
                 return context.getString(R.string.err_reintentos);
             case "sin_clientes":
                 return context.getString(R.string.err_sin_clientes);
+            case "no_audio":
+                return context.getString(R.string.err_sin_audio);
+            case "audio_vacio":
+                return context.getString(R.string.err_audio_vacio);
+            case "extraccion":
+                return context.getString(R.string.err_extraccion);
+            case "sin_destino":
+                return context.getString(R.string.err_sin_destino);
+            case "cancel":
+                return context.getString(R.string.err_cancelado);
             default:
                 return context.getString(R.string.err_generico, detail == null ? safe : detail);
         }
