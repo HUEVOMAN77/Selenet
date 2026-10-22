@@ -29,7 +29,8 @@ public final class Quality {
     /**
      * Alturas que se pueden elegir en Ajustes, de la mas baja a la mas alta.
      * 1080p es el techo real: arriba de eso YouTube entrega video y audio por separado
-     * y aca no se pueden juntar sin ffmpeg (eso lo hace la PC en modo hibrido).
+     * y aca no hay con que juntarlos, porque la app no lleva ffmpeg. Esos formatos se listan
+     * marcados como "Requiere PC" y no se descargan.
      */
     public static final int[] HEIGHTS = {144, 240, 360, 480, 720, 1080};
 
