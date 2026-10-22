@@ -1,4 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">YTDL Fork</string>
+
+    <string name="tab_descargas">Descargas</string>
+    <string name="tab_historial">Historial</string>
+    <string name="tab_ajustes">Ajustes</string>
+
+    <string name="hint_url">Pegá el link del video</string>
+    <string name="btn_agregar">Agregar a la cola</string>
+    <string name="btn_descargar">Descargar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_pausar">Pausar</string>
+    <string name="btn_reanudar">Reanudar</string>
+    <string name="btn_reintentar">Reintentar</string>
+    <string name="btn_borrar_part">Limpiar cortes</string>
+    <string name="btn_copiar_log">Copiar log</string>
+    <string name="log_copiado">Log copiado al portapapeles</string>
+
+    <string name="estado_en_espera">En espera</string>
+    <string name="estado_descargando">Descargando</string>
+    <string name="estado_pausada">Pausada</string>
+    <string name="estado_completada">Completada</string>
+    <string name="estado_error">Error</string>
+
+    <string name="cola_vacia">No hay descargas en la cola.</string>
+    <string name="historial_vacio">Todavía no terminaste ninguna descarga.</string>
+    <string name="clipboard_titulo">Link detectado</string>
+    <string name="clipboard_mensaje">Hay un link en el portapapeles. ¿Querés pegarlo?</string>
+    <string name="clipboard_pegar">Pegar</string>
+    <string name="clipboard_descartar">Descartar</string>
+    <string name="link_invalido">Eso no parece un link.</string>
+    <string name="agregada">Agregada a la cola</string>
+
+    <string name="ajustes_motor">Motor de descarga</string>
+    <string name="ajustes_version">Versión</string>
+    <string name="ajustes_actualizado">Última actualización</string>
+    <string name="ajustes_actualizar">Actualizar motor</string>
+    <string name="ajustes_pendiente">todavía no se actualiza (usa el del APK)</string>
+    <string name="ajustes_carpeta">Carpeta de destino</string>
+    <string name="ajustes_cambiar_carpeta">Elegir carpeta</string>
+    <string name="ajustes_calidad">Calidad recordada</string>
+    <string name="ajustes_ninguna">Todavía no elegiste ninguna</string>
+    <string name="ajustes_avanzado">Avanzado</string>
+    <string name="ajustes_hibrido">Descargar en la PC por red</string>
+    <string name="ajustes_hibrido_off">Activá el modo híbrido desde la PC para habilitar esto.</string>
+    <string name="modo_hibrido">Modo híbrido: el link lo procesa tu PC</string>
+
+    <string name="notif_canal">Descargas</string>
+    <string name="notif_titulo">Descargando</string>
+    <string name="notif_titulo_error">Descarga detenida</string>
+    <string name="notif_titulo_listo">Descarga terminada</string>
+    <string name="notif_dejo">Dejo la descarga en segundo plano</string>
+    <string name="notif_tap">Toque para ver la cola</string>
+    <string name="notif_pause_all">Pausar todo</string>
+    <string name="notif_start_all">Reanudar todo</string>
+
+    <string name="err_privado">El video es privado o pide login.</string>
+    <string name="err_no_disponible">El video no está disponible (borrado, restringido por región o edad).</string>
+    <string name="err_sitio">Ese sitio no lo soporta el motor.</string>
+    <string name="err_red">Sin conexión o se cortó a mitad. Reintento solo.</string>
+    <string name="err_espacio">No hay espacio suficiente en el almacenamiento.</string>
+    <string name="err_formato">No encontré un formato que se pueda bajar sin merge.</string>
+    <string name="err_generico">Fallo: %1$s</string>
+    <string name="err_reintentos">Se agotaron los 3 reintentos.</string>
+
+    <string name="fmt_titulo">Elegí calidad</string>
+    <string name="fmt_requiere_pc">Requiere PC</string>
+    <string name="fmt_solo_audio">Solo audio</string>
+    <string name="fmt_obteniendo">Leyendo formatos…</string>
+    <string name="fmt_fallo">No pude leer los formatos: %1$s</string>
+
+    <string name="guardado">Guardado en tu carpeta</string>
+
+    <string name="q_mejor">Mejor (automático)</string>
+    <string name="q_mp4">MP4 (compatible)</string>
+    <string name="q_360">360p</string>
+    <string name="q_audio">Solo audio</string>
+    <string name="q_chica">La más chica</string>
+    <string name="part_borrados">%1$d archivo(s) de corte borrado(s)</string>
+    <string name="abrir">Abrir</string>
+    <string name="compartir">Compartir</string>
+    <string name="borrar">Borrar archivo</string>
+    <string name="redescargar">Volver a descargar</string>
+    <string name="borrado">Archivo borrado</string>
+    <string name="sin_app">No hay app para abrir ese archivo.</string>
+    <string name="permiso_saf">Sin permiso no puedo guardar ahí.</string>
+    <string name="sin_carpeta">Elegí primero una carpeta en Ajustes.</string>
 </resources>
