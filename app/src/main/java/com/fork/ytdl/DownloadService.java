@@ -246,7 +246,11 @@ public class DownloadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         running = true;
-        startForeground(NOTIF_ID, buildNotification());
+        try {
+            startForeground(NOTIF_ID, buildNotification());
+        } catch (Exception e) {
+            Logs.append(null, "error startForeground: " + e.getMessage());
+        }
         if (intent != null) {
             String action = intent.getAction();
             if (ACTION_PAUSE_ALL.equals(action)) {
@@ -599,13 +603,21 @@ public class DownloadService extends Service {
         Intent intent = new Intent(action).setClassName(app, DownloadService.class.getName());
         if (ACTION_RESUME.equals(action)) {
             // El servicio ya puede estar andando; solo hace falta levantar el worker.
-            app.startService(intent);
+            try {
+                app.startService(intent);
+            } catch (Exception e) {
+                Logs.append(null, "error startService: " + e.getMessage());
+            }
             return;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            app.startForegroundService(intent);
-        } else {
-            app.startService(intent);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                app.startForegroundService(intent);
+            } else {
+                app.startService(intent);
+            }
+        } catch (Exception e) {
+            Logs.append(null, "error startForegroundService: " + e.getMessage());
         }
     }
 

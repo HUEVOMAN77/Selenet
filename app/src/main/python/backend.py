@@ -318,15 +318,25 @@ def _kind_of(raw):
     return 'video'
 
 
+def _to_int(value, default=0):
+    """Convierte un valor a int de forma segura (soporta None, float o str invalido)."""
+    if value is None:
+        return default
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return default
+
+
 def _item(raw, index=0):
     return {
         'id': _selector(raw.get('format_id'), index),
         'kind': _kind_of(raw),
-        'height': int(raw.get('height') or 0),
+        'height': _to_int(raw.get('height')),
         'ext': (raw.get('ext') or '?'),
-        'fps': int(raw.get('fps') or 0),
-        'br': int(raw.get('tbr') or raw.get('vbr') or 0),
-        'size': int(raw.get('filesize') or raw.get('filesize_approx') or 0),
+        'fps': _to_int(raw.get('fps')),
+        'br': _to_int(raw.get('tbr') or raw.get('vbr')),
+        'size': _to_int(raw.get('filesize') or raw.get('filesize_approx')),
     }
 
 

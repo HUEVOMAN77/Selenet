@@ -116,7 +116,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             final Formats.Result found = result;
             main.post(() -> {
                 reading = false;
-                if (binding == null) {
+                if (binding == null || !isAdded() || getContext() == null) {
                     return;
                 }
                 binding.btnAdd.setEnabled(true);
