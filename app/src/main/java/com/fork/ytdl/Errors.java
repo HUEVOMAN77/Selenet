@@ -32,6 +32,8 @@ public final class Errors {
                 return context.getString(R.string.err_formato);
             case "reintentos":
                 return context.getString(R.string.err_reintentos);
+            case "sin_clientes":
+                return context.getString(R.string.err_sin_clientes);
             default:
                 return context.getString(R.string.err_generico, detail == null ? safe : detail);
         }

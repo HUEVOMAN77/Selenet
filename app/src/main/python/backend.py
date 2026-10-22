@@ -101,6 +101,14 @@ def retryable(kind):
     return kind == 'network'
 
 
+# Orden de clientes de YouTube que este motor puede usar sin cookies ni PO token. El
+# primero es el que el fork elegia solo por defecto; cuando el sitio responde 403 se
+# reintenta con el siguiente, porque el bloqueo depende del cliente y no de la red del
+# usuario. Cada intento usa UN solo cliente: el extractor guarda la respuesta del ultimo,
+# mezclar dos dejaria vigente el URL que ya fue rechazado.
+CLIENTS = ['android_sdkless', 'tv_downgraded', 'tv', 'web_safari']
+
+
 def _error_class():
     """DownloadError del motor activo; cambia si se carga uno descargado."""
     try:
@@ -197,34 +205,51 @@ def run(task_id, url, outdir, fmt, sink):
     }
 
     stop = None
-    try:
-        with youtube_dl.YoutubeDL(options) as ydl:
-            try:
-                info = ydl.extract_info(url, download=True)
-                if info and info.get('title'):
-                    sink.onTitle(info['title'])
+    for index, client in enumerate(CLIENTS):
+        attempt = dict(options)
+        attempt['youtube_player_clients'] = [client]
+        if index:
+            # otro cliente devuelve otras URLs: el corte de la intentacion previa no sirve,
+            # y conviene no demorar el cambio insistiendo demasiado en cada fragmento
+            attempt['continuedl'] = False
+            attempt['fragment_retries'] = 1
+        else:
+            sink.onLog('cliente ' + client)
+        try:
+            with youtube_dl.YoutubeDL(attempt) as ydl:
                 try:
-                    state['final'] = ydl.prepare_filename(info) or state['final']
-                except Exception:
-                    pass
-            except Abort:
+                    info = ydl.extract_info(url, download=True)
+                    if info and info.get('title'):
+                        sink.onTitle(info['title'])
+                    try:
+                        state['final'] = ydl.prepare_filename(info) or state['final']
+                    except Exception:
+                        pass
+                except Abort:
+                    stop = _stop_action(task_id)
+                    if not stop:
+                        raise
+        except Abort:
+            stop = _stop_action(task_id) or 'cancel'
+            break
+        except _error_class() as err:
+            if _stop_action(task_id):
                 stop = _stop_action(task_id)
-                if not stop:
-                    raise
-    except Abort:
-        stop = _stop_action(task_id) or 'cancel'
-    except _error_class() as err:
-        if _stop_action(task_id):
-            stop = _stop_action(task_id)
-        else:
-            sink.onError(_classify(str(err)), str(err))
+                break
+            kind = _classify(str(err))
+            if kind == 'forbidden' and index + 1 < len(CLIENTS):
+                sink.onLog('YouTube bloqueo la descarga con el cliente %s; reintento'
+                           % client)
+                continue
+            sink.onError(kind, str(err))
             return False
-    except Exception as err:
-        if _stop_action(task_id):
-            stop = _stop_action(task_id)
-        else:
+        except Exception as err:
+            if _stop_action(task_id):
+                stop = _stop_action(task_id)
+                break
             sink.onError(_classify('%s: %s' % (err.__class__.__name__, err)), str(err))
             return False
+        break
 
     if stop == 'pause':
         sink.onStopped('pause', state['partial'])
@@ -499,6 +524,24 @@ def _extract(tar_path, out_dir):
     return written
 
 
+def _supports_clients(package_dir):
+    """True si el motor entiende `youtube_player_clients`.
+
+    El tarball de ytdl-org no lo trae, y sin ese parametro la cadena de reintentos contra
+    el 403 de YouTube queda ciega: es mejor quedarse con el motor del APK que "actualizar"
+    a uno que vuelve a fallar igual.
+    """
+    probe = os.path.join(package_dir, 'youtube_dl', 'extractor', 'youtube.py')
+    try:
+        with io.open(probe, encoding='utf-8', errors='ignore') as handle:
+            for line in handle:
+                if 'youtube_player_clients' in line:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
 def install(tar_path, lib_dir, force=False):
     """Instala el motor del tarball si es mas nuevo; si no, deja vigente el anterior."""
     current = _read_version()
@@ -520,6 +563,10 @@ def install(tar_path, lib_dir, force=False):
         if not force and _tuple_version(nuevo) <= _tuple_version(current):
             return json.dumps({'ok': False, 'kind': 'igual', 'version': current,
                                'nueva': nuevo})
+        if not _supports_clients(staging):
+            return json.dumps({'ok': False, 'kind': 'sin_clientes', 'version': current,
+                               'nueva': nuevo,
+                               'error': 'ese motor no sabe cambiar de cliente de YouTube'})
         if os.path.isdir(activo):
             shutil.rmtree(activo)
         os.rename(staging, activo)

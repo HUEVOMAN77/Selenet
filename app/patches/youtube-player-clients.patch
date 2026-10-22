@@ -1,0 +1,27 @@
+diff --git a/youtube_dl/extractor/youtube.py b/youtube_dl/extractor/youtube.py
+index 81a0191..24697d5 100644
+--- a/youtube_dl/extractor/youtube.py
++++ b/youtube_dl/extractor/youtube.py
+@@ -2383,11 +2383,20 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
+                 client_names = traverse_obj(self._INNERTUBE_CLIENTS, (
+                     T(dict_items), lambda _, k_v: k_v[0] == 'web_safari', 0))[:1]
+             if not client_names:
+-                client_names = traverse_obj(self._INNERTUBE_CLIENTS, (
++                candidates = traverse_obj(self._INNERTUBE_CLIENTS, (
+                     T(dict_items), lambda _, k_v: not (
+                         k_v[1].get('REQUIRE_PO_TOKEN')
+                         or (bool(k_v[1].get('WITH_COOKIES', auth)) ^ bool(auth))
+-                    ), 0))[:1]
++                    ), 0))
++                # youtube_player_clients: orden de preferencia de clientes, para poder
++                # reintentar con otro cuando el sitio rechaza la descarga (HTTP 403).
++                # Sin el parametro se conserva el comportamiento original: un solo cliente.
++                wanted = self._downloader.params.get('youtube_player_clients') or []
++                if wanted:
++                    picked = [name for name in wanted if name in candidates]
++                    client_names = picked[:3] or candidates[:1]
++                else:
++                    client_names = candidates[:1]
+             if 'web' not in client_names:
+                 # only live HLS webpage links will download: ignore playability
+                 player_response = filter_dict(

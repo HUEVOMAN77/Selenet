@@ -1,10 +1,15 @@
 # ydl-android
 
-App Android que ejecuta **youtube-dl sin modificar** dentro del teléfono.
+App Android que ejecuta **youtube-dl** dentro del teléfono.
 
 El motor es el de [`HUEVOMAN77/youtube-dl`](https://github.com/HUEVOMAN77/youtube-dl), fork de
-`ytdl-org/youtube-dl` en el commit `956b8c5855` (versión `2025.04.07`). No se parcheó ni una línea
-del paquete `youtube_dl`: la app lo importa y llama a `YoutubeDL` con su API pública.
+`ytdl-org/youtube-dl` en el commit `956b8c5855` (versión `2025.04.07`).
+
+> **El fork lleva un parche chico en el extractor** (`app/patches/youtube-player-clients.patch`).
+> Agrega el parámetro `youtube_player_clients` a `YoutubeDL`, que es lo único que permite cambiar de
+> cliente de YouTube y reintentar cuando el sitio responde `HTTP 403`. Sin ese parche la app vuelve a
+> elegir siempre un solo cliente y el modo "solo audio" se corta con 403. Por eso `backend.py` rechaza
+> instalar un motor que no lo tenga (Ajustes → Actualizar motor).
 
 ## Cómo funciona
 
@@ -33,8 +38,9 @@ directorio de datos de la app, y eso impide usar ffmpeg. Bajarlo a 28 lo evita.
 ## Pasos
 
 ```sh
-# 1. Generar el wheel desde tu fork de youtube-dl
-python -m pip wheel ../youtube-dl --no-deps --no-build-isolation -w app/libs
+# 1. Aplicar el parche del cliente al fork y generar el wheel
+cd ../youtube-dl && git apply ../ydl-android/app/patches/youtube-player-clients.patch
+python -m pip wheel . --no-deps --no-build-isolation -w ../ydl-android/app/libs
 
 # 2. Escribir local.properties (no se committea) con tu SDK, Python y wheel
 #    sdk.dir=.../Android/Sdk
@@ -44,6 +50,26 @@ python -m pip wheel ../youtube-dl --no-deps --no-build-isolation -w app/libs
 # 3. Compilar
 JAVA_HOME=/ruta/jdk17 gradle-8.9/bin/gradle assembleDebug
 # -> app/build/outputs/apk/debug/app-debug.apk (~16 MB, arm64-v8a)
+```
+
+## Firma de release
+
+`assembleRelease` firma con `signingConfigs.debug` salvo que `local.properties` tenga las cuatro
+claves de la firma propia; en ese caso usa `signingConfigs.fork`:
+
+```
+keystoreFile=/ruta/ytdl-fork-release.jks
+keystoreStorePassword=...
+keystoreAlias=ytdl-fork
+keystoreKeyPassword=...
+```
+
+La clave **no se committea**: es lo que autoriza las actualizaciones. Si se pierde, la única forma
+de instalar una versión nueva es desinstalar la app (se borra el historial).
+
+```sh
+keytool -genkeypair -v -keystore ytdl-fork-release.jks -alias ytdl-fork \
+  -keyalg RSA -keysize 2048 -validity 10950 -dname "CN=..., OU=..., O=..., C=..."
 ```
 
 ## Limitaciones conocidas de la v1

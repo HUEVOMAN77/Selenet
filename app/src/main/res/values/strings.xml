@@ -71,6 +71,11 @@
     <string name="ajustes_avanzado">Avanzado</string>
     <string name="ajustes_registro">Registro técnico</string>
     <string name="ajustes_registro_sub">Muestra la actividad del motor al pie de la pantalla de Descargas. Sirve para ver qué falló cuando una descarga no arranca; si no lo estás usando, dejalo apagado.</string>
+    <string name="ajustes_fallo">La app se cerró mal</string>
+    <string name="btn_fallo_copiar">Copiar detalle</string>
+    <string name="btn_fallo_borrar">Borrar</string>
+    <string name="fallo_copiado">Detalle del fallo copiado</string>
+    <string name="fallo_borrado">Detalle del fallo borrado</string>
     <string name="ajustes_hibrido">Descargar en la PC por red</string>
     <string name="ajustes_hibrido_off">Activá el modo híbrido desde la PC para habilitar esto.</string>
     <string name="modo_hibrido">Modo híbrido: el link lo procesa tu PC</string>
@@ -93,6 +98,7 @@
     <string name="err_formato">No encontré un formato que se pueda bajar sin merge.</string>
     <string name="err_generico">Fallo: %1$s</string>
     <string name="err_reintentos">Se agotaron los 3 reintentos.</string>
+    <string name="err_sin_clientes">El motor de ytdl-org no sabe cambiar de cliente de YouTube, así que volvería a fallar con el 403. Queda activo el motor que trae la app.</string>
     <string name="err_detalle_titulo">Qué pasó</string>
     <string name="err_detalle">Detalle técnico</string>
     <string name="err_intentos">Reintentos: %1$d</string>
