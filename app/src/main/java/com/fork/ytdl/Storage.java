@@ -1,5 +1,6 @@
 package com.fork.ytdl;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +9,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
 import androidx.core.content.FileProvider;
@@ -163,6 +165,139 @@ public final class Storage {
             in.close();
             out.close();
         }
+    }
+
+    // ---------------------------------------------------------------- nombre y caché de audio
+
+    private static final java.util.regex.Pattern INVALID =
+            java.util.regex.Pattern.compile("[/\\\\:*?\"<>|\\p{Cntrl}]");
+
+    /** Carpeta privada de caché para el MP4 temporal del modo audio; nunca el destino del usuario. */
+    public static File audioCache(Context context) {
+        File dir = new File(context.getApplicationContext().getCacheDir(), "audio");
+        if (!dir.exists() && !dir.mkdirs()) {
+            return context.getCacheDir();
+        }
+        return dir;
+    }
+
+    /** Nombre limpio: sin / \\ : * ? " &lt; &gt; | ni controles, y cortado a 100 caracteres. */
+    public static String safeBase(String raw) {
+        String text = raw == null ? "" : raw.trim();
+        text = INVALID.matcher(text).replaceAll("_");
+        while (text.startsWith(".")) {
+            text = text.substring(1);
+        }
+        while (text.endsWith(".") || text.endsWith(" ")) {
+            text = text.substring(0, text.length() - 1);
+        }
+        if (text.isEmpty()) {
+            text = "audio";
+        }
+        return text.length() > 100 ? text.substring(0, 100) : text;
+    }
+
+    /**
+     * Pasa un archivo de una carpeta a otra y deja el origen borrado. `renameTo` no funciona
+     * entre volumenes (la caché interna y el almacenamiento publico son distintos), asi que
+     * si el rename falla se copia y despues se tira el original.
+     */
+    public static boolean move(File from, File to) {
+        if (from == null || !from.isFile() || from.equals(to)) {
+            return false;
+        }
+        if (to.getParentFile() != null && !to.getParentFile().exists()) {
+            to.getParentFile().mkdirs();
+        }
+        if (from.renameTo(to)) {
+            return true;
+        }
+        try {
+            transfer(new FileInputStream(from), new java.io.FileOutputStream(to));
+        } catch (Exception e) {
+            Logs.append(null, "no se pudo mover " + from.getName() + ": " + e);
+            if (to.exists()) {
+                to.delete();
+            }
+            return false;
+        }
+        if (!to.isFile() || to.length() != from.length()) {
+            to.delete();
+            return false;
+        }
+        return from.delete();
+    }
+
+    /** El primer nombre libre del par base.ext; si está tomado prueba "base (1).ext", etc. */
+    public static File unique(File dir, String base, String ext) {
+        File file = new File(dir, base + "." + ext);
+        for (int n = 1; file.exists() && n < 1000; n++) {
+            file = new File(dir, base + " (" + n + ")." + ext);
+        }
+        return file;
+    }
+
+    /**
+     * Alta el archivo como audio en MediaStore para que aparezca en reproductores y galería.
+     * No pide permisos nuevos: con targetSdk 28 y WRITE_EXTERNAL_STORAGE ya declarado, el insert
+     * funciona en Android 6 a 13. Si el insert no se puede, usa al MediaScanner con el MIME real.
+     */
+    public static boolean registerAudio(Context context, File file) {
+        if (file == null || !file.isFile()) {
+            return false;
+        }
+        String name = file.getName();
+        int dot = name.lastIndexOf('.');
+        String base = dot > 0 ? name.substring(0, dot) : name;
+        if (alreadyInStore(context, file.getAbsolutePath())) {
+            return true;
+        }
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.TITLE, base);
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeOf(name));
+        values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
+        values.put(MediaStore.Audio.Media.DATA, file.getAbsolutePath());
+        values.put(MediaStore.Audio.Media.IS_MUSIC, true);
+        try {
+            if (context.getContentResolver()
+                    .insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values) != null) {
+                return true;
+            }
+        } catch (Exception e) {
+            Logs.append(null, "MediaStore audio: " + e);
+        }
+        scan(context, file.getAbsolutePath());
+        return false;
+    }
+
+    /** true si MediaScanner ya anotó esa ruta (evita filas duplicadas). */
+    private static boolean alreadyInStore(Context context, String path) {
+        try (Cursor cursor = context.getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{"_id"},
+                MediaStore.Audio.Media.DATA + "=?", new String[]{path}, null)) {
+            return cursor != null && cursor.moveToFirst();
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    /** Borra lo que dejó el modo audio en la caché, salvo lo que una tarea todavía necesita. */
+    public static int cleanAudioCache(Context context, java.util.Collection<String> keep) {
+        File[] files = audioCache(context).listFiles();
+        if (files == null) {
+            return 0;
+        }
+        int deleted = 0;
+        for (File file : files) {
+            if (keep != null && keep.contains(file.getAbsolutePath())) {
+                continue;
+            }
+            if (file.delete()) {
+                deleted++;
+            }
+        }
+        return deleted;
     }
 
     // ---------------------------------------------------------------- operaciones
