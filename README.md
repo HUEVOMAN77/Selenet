@@ -167,8 +167,9 @@ la procedencia de cada parte:
   lanzador es propio.
 
 El código de Selenet (esta app) se publica bajo la **Unlicense**, la misma licencia del motor,
-para no agregar restricciones sobre software que ya era de dominio público. Cada librería
-mencionada arriba sigue bajo su propia licencia.
+para no agregar restricciones sobre software que ya era de dominio público: está en `LICENSE`.
+El detalle de cada dependencia y el aviso de uso están en `NOTICE`. Cada librería mencionada
+arriba sigue bajo su propia licencia.
 
 **Aviso:** Selenet es una herramienta técnica. Bajá solo contenido que puedas bajar: respetá los
 términos de servicio del sitio y los derechos del autor.

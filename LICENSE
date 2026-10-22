@@ -22,18 +22,3 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <https://unlicense.org>
-
---------------------------------------------------------------------
-
-Selenet es la continuidad oficial de "ydl-android" (creado por HUEVOMAN77)
-y usa el motor de youtube-dl (ytdl-org/youtube-dl, Unlicense / dominio
-publico) en la version del fork HUEVOMAN77/youtube-dl.
-
-Cada libreria empaquetada dentro del APK sigue bajo su propia licencia:
-
-- Chaquopy (incluye CPython 3.12 y librerias de Python)      Apache-2.0
-- AndroidX y Jetpack                                         Apache-2.0
-- Material Components for Android y Material Icons           Apache-2.0
-- SQLite (SQLite public domain)                              dominio publico
-
-Los creditos completos estan en README.md, seccion "Creditos y licencia".
