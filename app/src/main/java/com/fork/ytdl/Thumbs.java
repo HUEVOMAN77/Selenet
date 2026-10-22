@@ -2,6 +2,7 @@ package com.fork.ytdl;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.LruCache;
@@ -74,11 +75,38 @@ public final class Thumbs {
         if (FAILED.contains(key)) {
             return;
         }
-        POOL.execute(() -> load(key, view));
+        POOL.execute(() -> load(key, view, null, null));
     }
 
-    private static void load(String key, ImageView view) {
-        Bitmap bitmap = fetch(key);
+    /**
+     * Miniatura de un archivo que ya esta en la carpeta: un cuadro del propio video,
+     * leido con MediaMetadataRetriever. El audio no tiene cuadro y queda con el fondo.
+     */
+    public static void showFile(ImageView view, android.content.Context context, String path) {
+        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        if (path == null || Storage.isAudioName(path)) {
+            view.setTag(null);
+            view.setImageResource(R.drawable.thumb_audio);
+            return;
+        }
+        String key = "archivo:" + path;
+        Bitmap cached = CACHE.get(key);
+        view.setTag(key);
+        if (cached != null && !cached.isRecycled()) {
+            view.setImageBitmap(cached);
+            return;
+        }
+        view.setImageResource(R.drawable.thumb_placeholder);
+        if (FAILED.contains(key)) {
+            return;
+        }
+        final android.content.Context app = context.getApplicationContext();
+        POOL.execute(() -> load(key, view, app, path));
+    }
+
+    private static void load(String key, ImageView view,
+                             android.content.Context context, String path) {
+        Bitmap bitmap = context == null ? fetch(key) : frame(context, path);
         if (bitmap == null) {
             FAILED.add(key);
             return;
@@ -91,6 +119,51 @@ public final class Thumbs {
                 view.setImageBitmap(found);
             }
         });
+    }
+
+    /** Un cuadro del archivo, achicado a 240 px para no llenar la memoria con fotogramas. */
+    private static Bitmap frame(android.content.Context context, String path) {
+        android.media.MediaMetadataRetriever retriever =
+                new android.media.MediaMetadataRetriever();
+        Bitmap raw = null;
+        Bitmap small = null;
+        try {
+            if (path.startsWith("content://")) {
+                retriever.setDataSource(context, Uri.parse(path));
+            } else {
+                retriever.setDataSource(path);
+            }
+            raw = retriever.getFrameAtTime(0,
+                    android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            small = shrink(raw);
+            return small;
+        } catch (Exception e) {
+            return null;
+        } finally {
+            try {
+                retriever.release();
+            } catch (Exception ignored) {
+            }
+            // si shrink devolvio el mismo bitmap no se puede tirar aca
+            if (raw != null && raw != small && !raw.isRecycled()) {
+                raw.recycle();
+            }
+        }
+    }
+
+    private static Bitmap shrink(Bitmap source) {
+        if (source == null) {
+            return null;
+        }
+        int width = source.getWidth();
+        int height = source.getHeight();
+        if (width <= 0 || height <= 0 || width <= SIDE) {
+            return source;
+        }
+        float ratio = SIDE / (float) width;
+        Bitmap small = Bitmap.createScaledBitmap(source, SIDE,
+                Math.max(1, Math.round(height * ratio)), true);
+        return small == source ? source : small;
     }
 
     /** Descarga y decodifica la miniatura; null en cualquier problema de red o formato. */

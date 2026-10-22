@@ -9,7 +9,7 @@
     <string name="portada_descargas">Descargas</string>
     <string name="portada_descargas_sub">Pegá un link, elegí calidad y listo.</string>
     <string name="portada_historial">Historial</string>
-    <string name="portada_historial_sub">Lo que ya se bajó, con su ruta.</string>
+    <string name="portada_historial_sub">Todo lo que ya está bajado, en tu carpeta o en la de la app.</string>
     <string name="portada_ajustes">Ajustes</string>
     <string name="portada_ajustes_sub">Motor, carpeta y calidad.</string>
 
@@ -67,10 +67,22 @@
     <string name="motor_reset_ok_toast">Ahora usa el motor del APK</string>
     <string name="motor_sugerencia">Actualizar baja el código de youtube-dl desde GitHub y lo guarda dentro de la app; si algo falla sigue valiendo el del APK. Mantené pulsado el botón para volver al del APK.</string>
     <string name="ajustes_carpeta">Carpeta de destino</string>
+    <string name="ajustes_carpeta_nota">Las descargas nuevas van a esa carpeta y se ven en el Historial. Mantené pulsado el botón para volver a la carpeta de la app.</string>
+    <string name="ajustes_carpeta_fallo">No se pudo escribir en esa carpeta; elegí otra o volvé a la de la app.</string>
     <string name="ajustes_cambiar_carpeta">Elegir carpeta</string>
     <string name="carpeta_elegida">Ahora se guarda en: %1$s</string>
     <string name="carpeta_interna">Volviste a la carpeta de la aplicación</string>
-    <string name="ajustes_calidad">Calidad recordada</string>
+    <string name="ajustes_calidad">Calidad de descarga</string>
+    <string name="ajustes_calidad_titulo">Elegí la calidad</string>
+    <string name="ajustes_calidad_valor">Video: %1$s\nAudio: %2$s</string>
+    <string name="ajustes_calidad_fila">%1$s\n%2$s</string>
+    <string name="ajustes_calidad_video_titulo">Calidad del video</string>
+    <string name="ajustes_calidad_audio_titulo">Calidad del audio</string>
+    <string name="ajustes_calidad_video_nota">De la resolución más baja a la más alta. Se baja en MP4 con video y audio juntos, sin juntar pistas en la PC.</string>
+    <string name="ajustes_calidad_audio_nota">El audio sale del mismo MP4, así que mientras más alta sea la resolución elegida, mejor suena y más datos gasta.</string>
+    <string name="ajustes_calidad_audio_auto">Automática (la más barata)</string>
+    <string name="ajustes_calidad_nota">Tocá esta tarjeta para elegir la resolución del video y la del audio, de 144p hasta 1080p. Arriba de 1080p hay que juntar las pistas en la PC.</string>
+    <string name="fmt_audio_altura">Audio %1$dp</string>
     <string name="ajustes_ninguna">Todavía no elegiste ninguna</string>
     <string name="ajustes_avanzado">Avanzado</string>
     <string name="ajustes_registro">Registro técnico</string>
@@ -127,7 +139,7 @@
     <string name="fmt_altura">%1$dp</string>
     <string name="fmt_normal">Calidad normal (%1$s)</string>
     <string name="fmt_sin_medida">tamaño aprox. desconocido</string>
-    <string name="q_usar_ultima">Usar la última calidad</string>
+    <string name="q_usar_ultima">Usar la calidad de Ajustes</string>
 
     <string name="guardado">Guardado en tu carpeta</string>
 
@@ -138,6 +150,13 @@
     <string name="q_chica">La más chica</string>
 
     <string name="copiar_ruta">Copiar ruta</string>
+    <string name="hist_video">Video</string>
+    <string name="hist_audio">Audio</string>
+    <string name="hist_borrado_titulo">¿Borrar este archivo?</string>
+    <string name="hist_borrado_mensaje">%1$s se borra de tu carpeta y no hay forma de recuperarlo.</string>
+    <string name="hist_borrado_fallo">No se pudo borrar el archivo.</string>
+    <string name="hist_contando">Buscando archivos…</string>
+    <string name="hist_sin_ruta">Ese archivo esta en una carpeta que la app no puede exponer; abrilo desde el gestor de archivos.</string>
     <string name="ruta_copiada">Ruta copiada al portapapeles</string>
     <string name="part_borrados">%1$d archivo(s) de corte borrado(s)</string>
     <string name="abrir">Abrir</string>

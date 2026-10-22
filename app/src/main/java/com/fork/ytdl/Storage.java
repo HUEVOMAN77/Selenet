@@ -19,6 +19,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -29,6 +31,7 @@ public final class Storage {
 
     private static final String PREFS = "ajustes";
     private static final String KEY_TREE = "carpeta";
+    private static final String KEY_DIR = "carpeta_real";
     private static final String KEY_LOG = "log_visible";
     private static final String ALBUM = "YTDL Fork";
 
@@ -53,16 +56,74 @@ public final class Storage {
         return raw == null ? null : Uri.parse(raw);
     }
 
+    /**
+     * Guarda la carpeta elegida. Si el tree es del almacenamiento interno se guarda tambien
+     * su ruta real: escribir derecho ahi es mucho mas confiable que ir copiando el archivo
+     * por SAF despues de bajarlo. Con una SD o un proveedor raro queda solo el tree.
+     */
     public static void saveTree(Context context, Uri uri) {
+        SharedPreferences.Editor editor = prefs(context).edit();
+        if (uri == null) {
+            editor.remove(KEY_TREE).remove(KEY_DIR).apply();
+            return;
+        }
         try {
-            if (uri != null) {
-                context.getContentResolver().takePersistableUriPermission(uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            }
+            context.getContentResolver().takePersistableUriPermission(uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         } catch (Exception ignored) {
         }
-        prefs(context).edit().putString(KEY_TREE, uri == null ? null : uri.toString()).apply();
+        String real = treeRealPath(uri);
+        editor.putString(KEY_TREE, uri.toString());
+        if (real != null) {
+            editor.putString(KEY_DIR, real);
+        } else {
+            editor.remove(KEY_DIR);
+        }
+        editor.apply();
+    }
+
+    /** true si se puede crear y borrar un archivo dentro de esa carpeta. */
+    public static boolean writable(File dir) {
+        if (dir == null) {
+            return false;
+        }
+        if (!dir.exists() && !dir.mkdirs()) {
+            return false;
+        }
+        if (!dir.isDirectory()) {
+            return false;
+        }
+        File probe = new File(dir, ".write");
+        probe.delete();
+        try {
+            return probe.createNewFile();
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (probe.exists() && !probe.delete()) {
+                Logs.append(null, "no se pudo borrar la prueba de escritura");
+            }
+        }
+    }
+
+    /** La ruta real guardada, sin comprobar si todavia se puede escribir ahi. */
+    public static String chosenRaw(Context context) {
+        return prefs(context).getString(KEY_DIR, null);
+    }
+
+    /**
+     * La carpeta real que eligio el usuario, o null si no hay ninguna o si el tree es de una
+     * SD. Se comprueba la escritura cada vez: si la carpeta se borro a mano, la app vuelve a
+     * la de siempre en vez de fallar en cada descarga.
+     */
+    public static File chosenDir(Context context) {
+        String raw = prefs(context).getString(KEY_DIR, null);
+        if (raw == null) {
+            return null;
+        }
+        File dir = new File(raw);
+        return writable(dir) ? dir : null;
     }
 
     private static SharedPreferences prefs(Context context) {
@@ -76,23 +137,15 @@ public final class Storage {
     public static File sharedDir() {
         File dir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MOVIES), ALBUM);
-        if (!dir.exists() && !dir.mkdirs()) {
-            return null;
-        }
-        File probe = new File(dir, ".write");
-        try {
-            return probe.createNewFile() ? dir : null;
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (probe.exists() && !probe.delete()) {
-                Logs.append(null, "no se pudo borrar la prueba de escritura");
-            }
-        }
+        return writable(dir) ? dir : null;
     }
 
     /** Donde escribe el motor: siempre una ruta real. */
     public static File engineDir(Context context) {
+        File chosen = chosenDir(context);
+        if (chosen != null) {
+            return chosen;
+        }
         if (tree(context) != null) {
             File staging = new File(context.getApplicationContext().getFilesDir(), "staging");
             if (!staging.exists()) {
@@ -112,11 +165,31 @@ public final class Storage {
         return dir;
     }
 
+    /** Las carpetas que se recorren al armar el historial: la elegida, la publica y la de la app. */
+    public static List<File> searchDirs(Context context) {
+        List<File> dirs = new ArrayList<>();
+        File chosen = chosenDir(context);
+        if (chosen != null) {
+            dirs.add(chosen);
+        }
+        File shared = sharedDir();
+        File app = new File(context.getExternalFilesDir(null), "downloads");
+        for (File candidate : new File[]{shared, app}) {
+            if (candidate != null && candidate.isDirectory() && !dirs.contains(candidate)) {
+                dirs.add(candidate);
+            }
+        }
+        return dirs;
+    }
+
     public static String describe(Context context) {
+        File chosen = chosenDir(context);
+        if (chosen != null) {
+            return chosen.getAbsolutePath();
+        }
         Uri uri = tree(context);
         if (uri != null) {
-            String real = treeRealPath(uri);
-            return real != null ? real : uri.toString();
+            return uri.toString();
         }
         File shared = sharedDir();
         if (shared != null) {
@@ -131,7 +204,8 @@ public final class Storage {
     public static String publish(Context context, String stagedPath) {
         Uri tree = tree(context);
         File staged = new File(stagedPath);
-        if (tree == null || !staged.exists()) {
+        // con carpeta real el archivo ya esta en el destino; solo queda el tree SAF (SD)
+        if (tree == null || chosenDir(context) != null || !staged.exists()) {
             return stagedPath;
         }
         try {
@@ -345,9 +419,17 @@ public final class Storage {
 
     /** Uri listo para abrir o compartir: directo si es SAF, por FileProvider si es archivo. */
     public static Uri shareUri(Context context, String path) {
-        return isDoc(path) ? Uri.parse(path)
-                : FileProvider.getUriForFile(context, context.getPackageName() + ".archivos",
-                        new File(path));
+        if (isDoc(path)) {
+            return Uri.parse(path);
+        }
+        try {
+            return FileProvider.getUriForFile(context, context.getPackageName() + ".archivos",
+                    new File(path));
+        } catch (IllegalArgumentException e) {
+            // la ruta esta fuera de lo que el FileProvider puede exponer
+            Logs.append(null, "no se puede compartir " + path + ": " + e.getMessage());
+            return null;
+        }
     }
 
     public static String nameOf(String path) {
@@ -406,8 +488,38 @@ public final class Storage {
                 .getAbsolutePath();
     }
 
-    public static String mimeOf(String name) {
-        String lower = name.toLowerCase(Locale.US);
+    /** Extensiones que el historial reconoce como una descarga. */
+    private static final String[] VIDEO_EXT = {"mp4", "m4v", "mkv", "webm", "mov", "avi", "3gp"};
+    private static final String[] AUDIO_EXT = {"m4a", "mp3", "aac", "ogg", "opus", "wav", "flac"};
+
+    private static String extOf(String name) {
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? "" : name.substring(dot + 1).toLowerCase(Locale.US);
+    }
+
+    public static boolean isAudioName(String name) {
+        return name != null && contains(AUDIO_EXT, extOf(name));
+    }
+
+    /** Video o audio: lo que el historial muestra; lo demas (.part, .ytdl, fotos) queda fuera. */
+    public static boolean isMedia(String name) {
+        if (name == null || name.startsWith(".")) {
+            return false;
+        }
+        String ext = extOf(name);
+        return contains(VIDEO_EXT, ext) || contains(AUDIO_EXT, ext);
+    }
+
+    private static boolean contains(String[] values, String value) {
+        for (String known : values) {
+            if (known.equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String mimeOf(String name) {        String lower = name.toLowerCase(Locale.US);
         if (lower.matches(".*\\.(m4a|mp3|aac|wav|flac)$")) {
             return "audio/mp4";
         }

@@ -61,6 +61,13 @@ public class HistoryDb extends SQLiteOpenHelper {
         getWritableDatabase().delete(TABLE, "id=?", new String[]{id});
     }
 
+    /** Borra la fila que apunta a esa ruta: el archivo ya no esta y no hay que mostrarlo. */
+    public void removePath(String path) {
+        if (path != null) {
+            getWritableDatabase().delete(TABLE, "path=?", new String[]{path});
+        }
+    }
+
     public List<Task> all() {
         List<Task> tasks = new ArrayList<>();
         try (Cursor cursor = getReadableDatabase().query(TABLE, null, null, null, null, null,

@@ -2,6 +2,8 @@ package com.fork.ytdl;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +15,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.fork.ytdl.databinding.FragmentHistoryBinding;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class HistoryFragment extends Fragment implements DownloadService.Listener {
+public class HistoryFragment extends Fragment
+        implements DownloadService.Listener, HistoryAdapter.Reload {
+
+    private static final ExecutorService THREADS = Executors.newSingleThreadExecutor();
 
     private FragmentHistoryBinding binding;
     private final HistoryAdapter adapter = new HistoryAdapter();
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private boolean loading;
+    private boolean pending;
 
     @Nullable
     @Override
@@ -33,6 +42,7 @@ public class HistoryFragment extends Fragment implements DownloadService.Listene
     public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
         binding.historyList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.historyList.setAdapter(adapter);
+        adapter.setReload(this);
     }
 
     @Override
@@ -61,21 +71,46 @@ public class HistoryFragment extends Fragment implements DownloadService.Listene
         }
     }
 
-    private void refresh() {
-        List<Task> done = load(requireContext());
-        adapter.submit(done);
-        binding.historyEmpty.setVisibility(
-                adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    @Override
+    public void reload() {
+        if (binding != null) {
+            refresh();
+        }
     }
 
-    /** Terminadas y todavia con archivo disponible, leidas de la base. */
-    static List<Task> load(Context context) {
-        List<Task> done = new ArrayList<>();
-        for (Task task : HistoryDb.get(context).all()) {
-            if (Storage.exists(context, task.path)) {
-                done.add(task);
-            }
+    /**
+     * Recorrer carpetas y abrir videos cuesta, asi que se hace afuera del hilo de la interfaz.
+     * Si llegan cambios mientras se esta leyendo, se anotan y se vuelve al terminar.
+     */
+    private void refresh() {
+        if (binding == null) {
+            return;
         }
-        return done;
+        if (loading) {
+            pending = true;
+            return;
+        }
+        loading = true;
+        pending = false;
+        binding.historyEmpty.setVisibility(View.VISIBLE);
+        binding.historyEmptyText.setText(R.string.hist_contando);
+        Context app = requireContext().getApplicationContext();
+        THREADS.execute(() -> {
+            final List<Task> found = Library.all(app);
+            main.post(() -> {
+                loading = false;
+                if (binding == null || !isAdded()) {
+                    return;
+                }
+                adapter.submit(found);
+                boolean empty = adapter.getItemCount() == 0;
+                binding.historyEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+                binding.historyEmptyText.setText(R.string.historial_vacio);
+                if (pending) {
+                    pending = false;
+                    refresh();
+                }
+            });
+        });
     }
 }
