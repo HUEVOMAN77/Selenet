@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Silueta para los iconos monocromaticos (temas de Android 13+): la misma idea del arte -
+  una flecha que baja y un triangulo de play - pero en blanco y dentro del area segura
+  de 66dp del adaptive icon.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- palo de la flecha -->
+    <path
+        android:pathData="M33,25 h13 v27 h-13 z"
+        android:fillColor="#FFFFFFFF" />
+    <!-- punta hacia abajo -->
+    <path
+        android:pathData="M24,49 L55,49 L39.5,75 Z"
+        android:fillColor="#FFFFFFFF" />
+    <!-- triangulo de play -->
+    <path
+        android:pathData="M60,31 L86,54 L60,77 Z"
+        android:fillColor="#FFFFFFFF" />
+    <!-- bandeja -->
+    <path
+        android:pathData="M24,82 h60 a3,3 0 0,1 0,6 h-60 a3,3 0 0,1 0,-6 z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

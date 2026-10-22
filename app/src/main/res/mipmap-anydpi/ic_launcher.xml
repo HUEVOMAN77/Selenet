@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Icono para Android 7.x (sin adaptive icons): fondo + glifo centrado. -->
+<!-- Android 7.x, sin adaptive icons: la misma imagen de frente, sin recortes. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/ic_launcher_background" />
-    <item
-        android:drawable="@drawable/ic_launcher_foreground"
-        android:left="-14dp"
-        android:top="-14dp"
-        android:right="-14dp"
-        android:bottom="-14dp" />
+    <item android:drawable="@mipmap/ic_launcher_bg" />
 </layer-list>

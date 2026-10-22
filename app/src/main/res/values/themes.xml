@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.YtdlFork" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Oscura siempre: el degradado de bg_app.xml es parte del diseño, no del modo noche. -->
+    <style name="Theme.YtdlFork" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Roles de color Material 3 -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
@@ -39,17 +40,18 @@
 
         <item name="colorOutline">@color/outline</item>
         <item name="colorOutlineVariant">@color/outline_variant</item>
-        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowBackground">@drawable/bg_app</item>
 
         <!-- Escala de formas: tarjetas bien redondeadas, controles medianos -->
         <item name="shapeAppearanceSmallComponent">@style/Shape.Ytdl.Small</item>
         <item name="shapeAppearanceMediumComponent">@style/Shape.Ytdl.Medium</item>
         <item name="shapeAppearanceLargeComponent">@style/Shape.Ytdl.Large</item>
 
-        <!-- Barras del sistema -->
-        <item name="android:statusBarColor">@color/background</item>
-        <item name="android:navigationBarColor">@color/surface_container_low</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <!-- Barras del sistema: del mismo color del degradado para que no se corte -->
+        <item name="android:statusBarColor">@color/bg_top</item>
+        <item name="android:navigationBarColor">@color/surface_container_lowest</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
 
         <!-- Transiciones de fragmento -->
         <item name="android:windowAnimationStyle">@style/Animation.Ytdl.Window</item>

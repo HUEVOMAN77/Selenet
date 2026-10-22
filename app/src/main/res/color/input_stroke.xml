@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Borde del campo de link: casi invisible de dia, menta cuando escribe. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/primary" android:state_focused="true" />
+    <item android:color="#26FFFFFF" android:state_hovered="true" />
+    <item android:color="#1AFFFFFF" />
+</selector>

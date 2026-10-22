@@ -1,67 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta base del fork: teal profundo + acento ambar. Esquema Material 3, modo claro. -->
-    <color name="seed">#006B5C</color>
-    <color name="seed_accent">#7A5900</color>
+    <!--
+      Paleta oscura del fork: azul profundo arriba, verde azulado abajo, con acento menta.
+      Los nombres se conservan (primary, surface, state_*) porque los consumen styles.xml,
+      themes.xml y QueueAdapter; cambiar solo los valores viste toda la app de una vez.
+    -->
 
-    <color name="primary">#006B5C</color>
-    <color name="on_primary">#FFFFFF</color>
-    <color name="primary_container">#6FF7DF</color>
-    <color name="on_primary_container">#00201B</color>
+    <!-- degradado de fondo de pantalla -->
+    <color name="bg_top">#06131F</color>
+    <color name="bg_mid">#0A3546</color>
+    <color name="bg_bottom">#0B6A58</color>
 
-    <color name="secondary">#4A635D</color>
-    <color name="on_secondary">#FFFFFF</color>
-    <color name="secondary_container">#CCE8E0</color>
-    <color name="on_secondary_container">#06201B</color>
+    <color name="seed">#19E3A5</color>
+    <color name="seed_accent">#4C8DFF</color>
 
-    <color name="tertiary">#7A5900</color>
-    <color name="on_tertiary">#FFFFFF</color>
-    <color name="tertiary_container">#FFDEA6</color>
-    <color name="on_tertiary_container">#261A00</color>
+    <color name="primary">#3EE8B0</color>
+    <color name="on_primary">#00382A</color>
+    <color name="primary_container">#0E5C48</color>
+    <color name="on_primary_container">#8CFFD8</color>
 
-    <color name="error">#B3261E</color>
-    <color name="on_error">#FFFFFF</color>
-    <color name="error_container">#F9DEDC</color>
-    <color name="on_error_container">#410E0B</color>
+    <color name="secondary">#4C8DFF</color>
+    <color name="on_secondary">#04122E</color>
+    <color name="secondary_container">#1D4ED8</color>
+    <color name="on_secondary_container">#DCE7FF</color>
 
-    <color name="background">#F5FAF7</color>
-    <color name="on_background">#171D1B</color>
-    <color name="surface">#F5FAF7</color>
-    <color name="on_surface">#171D1B</color>
-    <color name="surface_variant">#DCE5E1</color>
-    <color name="on_surface_variant">#404947</color>
+    <color name="tertiary">#FFC95B</color>
+    <color name="on_tertiary">#3A2500</color>
+    <color name="tertiary_container">#5B3F00</color>
+    <color name="on_tertiary_container">#FFD98A</color>
 
-    <color name="surface_container_lowest">#FFFFFF</color>
-    <color name="surface_container_low">#EFF4F1</color>
-    <color name="surface_container">#E9EFEC</color>
-    <color name="surface_container_high">#E3E9E6</color>
-    <color name="surface_container_highest">#DDE3E0</color>
+    <color name="error">#FF8A80</color>
+    <color name="on_error">#420B08</color>
+    <color name="error_container">#4A1614</color>
+    <color name="on_error_container">#FFC9C4</color>
 
-    <color name="outline">#707977</color>
-    <color name="outline_variant">#C0C9C6</color>
-    <color name="inverse_surface">#303634</color>
-    <color name="inverse_on_surface">#ECF1EE</color>
-    <color name="inverse_primary">#6FF7DF</color>
+    <color name="background">#06131F</color>
+    <color name="on_background">#EAF3F7</color>
+    <color name="surface">#0A1E2C</color>
+    <color name="on_surface">#EAF3F7</color>
+    <color name="surface_variant">#16303F</color>
+    <color name="on_surface_variant">#9FB6C4</color>
+
+    <color name="surface_container_lowest">#04101C</color>
+    <color name="surface_container_low">#E60C2131</color>
+    <color name="surface_container">#F0102A3B</color>
+    <color name="surface_container_high">#16303F</color>
+    <color name="surface_container_highest">#1D3A4B</color>
+
+    <color name="outline">#5C7C8E</color>
+    <color name="outline_variant">#2A4657</color>
+    <color name="inverse_surface">#DCEBF2</color>
+    <color name="inverse_on_surface">#0A1A26</color>
+    <color name="inverse_primary">#0E5C48</color>
     <color name="scrim">#000000</color>
 
+    <!-- botones y campos -->
+    <color name="cta">#1FE0A0</color>
+    <color name="cta_deep">#0BB27E</color>
+    <color name="on_cta">#00281D</color>
+    <color name="segment_idle">#2F6BFF</color>
+    <color name="glass">#CC0A1A28</color>
+    <color name="glass_deep">#E6071622</color>
+    <color name="glass_stroke">#33FFFFFF</color>
+    <color name="input_field">#B304101C</color>
+    <color name="error_box">#3F1A22</color>
+    <color name="progress_track">#29FFFFFF</color>
+
+    <!-- barra inferior -->
+    <color name="nav_bar">#F203101A</color>
+    <color name="nav_indicator">#263EE8B0</color>
+
+    <!-- miniatura del video -->
+    <color name="thumb_bg">#143040</color>
+    <color name="thumb_scrim_top">#00020C12</color>
+    <color name="thumb_scrim_bottom">#99020C12</color>
+    <color name="thumb_play">#B3062418</color>
+
     <!-- Tokens de estado de la cola -->
-    <color name="state_active_bg">#D9F2EC</color>
-    <color name="state_active_fg">#00655A</color>
-    <color name="state_done_bg">#D8F0DC</color>
-    <color name="state_done_fg">#1B6B3A</color>
-    <color name="state_warn_bg">#FFEDCC</color>
-    <color name="state_warn_fg">#7A5300</color>
-    <color name="state_error_bg">#FCE3E1</color>
-    <color name="state_error_fg">#A8211C</color>
-    <color name="state_idle_bg">#E6ECE9</color>
-    <color name="state_idle_fg">#4A534F</color>
+    <color name="state_active_bg">#0E5C48</color>
+    <color name="state_active_fg">#4CF0BC</color>
+    <color name="state_done_bg">#0F4A2E</color>
+    <color name="state_done_fg">#6FE39B</color>
+    <color name="state_warn_bg">#5B3F00</color>
+    <color name="state_warn_fg">#FFC95B</color>
+    <color name="state_error_bg">#4A1614</color>
+    <color name="state_error_fg">#FF9A91</color>
+    <color name="state_idle_bg">#16303F</color>
+    <color name="state_idle_fg">#9FB6C4</color>
 
     <!-- Alias historicos: los usan QueueAdapter y layouts previos. Mantener. -->
     <color name="brand">@color/primary</color>
     <color name="brand_on">@color/on_primary</color>
     <color name="on_surface_legacy">@color/on_surface</color>
-    <color name="muted">#5C6663</color>
-    <color name="ok">#1B6B3A</color>
-    <color name="warn">#7A5300</color>
-    <color name="bad">#B3261E</color>
+    <color name="muted">#9FB6C4</color>
+    <color name="ok">#6FE39B</color>
+    <color name="warn">#FFC95B</color>
+    <color name="bad">#FF9A91</color>
 </resources>

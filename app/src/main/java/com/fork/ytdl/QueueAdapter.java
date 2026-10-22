@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fork.ytdl.databinding.ItemQueueBinding;
@@ -21,15 +20,44 @@ import java.util.List;
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
 
     private final List<Task> items = new ArrayList<>();
+    private String query = "";
+
+    /** Texto del buscador de la cola; vacio muestra todo. */
+    public void setQuery(String text) {
+        query = text == null ? "" : text.trim().toLowerCase(java.util.Locale.US);
+    }
+
+    public boolean hasQuery() {
+        return !query.isEmpty();
+    }
 
     public void submit(List<Task> tasks) {
         items.clear();
         for (Task task : tasks) {
-            if (!Task.DONE.equals(task.state)) {
+            if (!Task.DONE.equals(task.state) && matches(task)) {
                 items.add(task);
             }
         }
         notifyDataSetChanged();
+    }
+
+    /** Filtra por titulo o por link, sin tildes ni mayusculas, para que "audio" alcance. */
+    private boolean matches(Task task) {
+        if (query.isEmpty()) {
+            return true;
+        }
+        return normalize(task.displayName()).contains(query)
+                || normalize(task.url).contains(query)
+                || normalize(task.label).contains(query);
+    }
+
+    private static String normalize(String text) {
+        if (text == null) {
+            return "";
+        }
+        String flat = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return flat.toLowerCase(java.util.Locale.US);
     }
 
     @NonNull
@@ -62,14 +90,19 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             this.task = task;
             Context context = b.getRoot().getContext();
             b.itemTitle.setText(task.displayName());
-            b.itemSubtitle.setText(task.url + " · " + task.qualityLabel(context));
+            b.itemSubtitle.setText(task.qualityLabel(context));
             b.itemProgress.setProgress(Math.max(0, Math.min(100, task.percent)));
             b.itemState.setText(stateLabel(context, task));
             b.itemState.setTextColor(stateColor(context, task));
-            b.itemBadge.setImageResource(stateIcon(task));
-            ImageViewCompat.setImageTintList(b.itemBadge,
-                    ColorStateList.valueOf(stateColor(context, task)));
-            b.itemBadgeBg.setCardBackgroundColor(stateTint(context, task));
+            b.itemDot.setBackgroundTintList(ColorStateList.valueOf(stateColor(context, task)));
+            Thumbs.show(b.itemThumb, task.url);
+
+            boolean failed = Task.ERROR.equals(task.state);
+            b.itemError.setVisibility(failed ? android.view.View.VISIBLE
+                    : android.view.View.GONE);
+            if (failed) {
+                b.itemErrorText.setText(Errors.message(context, task));
+            }
 
             String action;
             if (Task.PAUSED.equals(task.state)) {
@@ -171,19 +204,15 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             return context.getString(R.string.estado_pausada) + " " + task.percent + "%";
         }
         if (Task.ERROR.equals(task.state)) {
-            return Errors.message(context, task);
+            // el motivo completo se lee en la caja roja de la propia fila
+            return context.getString(R.string.estado_error);
         }
         return context.getString(R.string.estado_en_espera);
     }
 
-    /** Color fuerte del estado: texto, icono y barra de progreso. */
+    /** Color fuerte del estado: texto, puntito y barra de progreso. */
     private static int stateColor(Context context, Task task) {
         return context.getColor(stateColorRes(task));
-    }
-
-    /** Fondo tonal del badge circular, del mismo familia que el color fuerte. */
-    private static int stateTint(Context context, Task task) {
-        return context.getColor(stateBgRes(task));
     }
 
     private static int stateColorRes(Task task) {
@@ -202,44 +231,12 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
         return R.color.state_idle_fg;
     }
 
-    private static int stateBgRes(Task task) {
-        if (Task.ERROR.equals(task.state)) {
-            return R.color.state_error_bg;
-        }
-        if (Task.RUNNING.equals(task.state)) {
-            return R.color.state_active_bg;
-        }
-        if (Task.PAUSED.equals(task.state)) {
-            return R.color.state_warn_bg;
-        }
-        if (Task.DONE.equals(task.state)) {
-            return R.color.state_done_bg;
-        }
-        return R.color.state_idle_bg;
-    }
-
-    private static int stateIcon(Task task) {
-        if (Task.ERROR.equals(task.state)) {
-            return R.drawable.ic_state_error;
-        }
-        if (Task.RUNNING.equals(task.state)) {
-            return R.drawable.ic_state_running;
-        }
-        if (Task.PAUSED.equals(task.state)) {
-            return R.drawable.ic_state_paused;
-        }
-        if (Task.DONE.equals(task.state)) {
-            return R.drawable.ic_state_done;
-        }
-        return R.drawable.ic_state_wait;
-    }
-
     private static int actionIcon(Task task) {
         if (Task.ERROR.equals(task.state) && task.fallback != null) {
             return R.drawable.ic_download;
         }
         if (Task.PAUSED.equals(task.state) || Task.ERROR.equals(task.state)) {
-            return R.drawable.ic_state_running;
+            return R.drawable.ic_refresh;
         }
         return R.drawable.ic_state_paused;
     }

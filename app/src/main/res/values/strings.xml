@@ -17,9 +17,9 @@
     <string name="seccion_log">Actividad del motor</string>
     <string name="fmt_todos">Todos</string>
     <string name="fmt_video">Solo MP4</string>
-    <string name="fmt_audio">Solo audio (m4a)</string>
+    <string name="fmt_audio">Solo audio</string>
 
-    <string name="hint_url">Pegá el link del video</string>
+    <string name="hint_url">Pegá el link del video aquí</string>
     <string name="btn_agregar">Agregar a la cola</string>
     <string name="btn_descargar">Descargar</string>
     <string name="btn_cancelar">Cancelar</string>
@@ -38,6 +38,9 @@
     <string name="estado_error">Error</string>
 
     <string name="cola_vacia">No hay descargas en la cola.</string>
+    <string name="buscar_en_cola">Buscar en la cola</string>
+    <string name="buscar_en_cola_hint">Buscar por título o link</string>
+    <string name="cola_sin_resultados">Ninguna descarga coincide con la búsqueda.</string>
     <string name="historial_vacio">Todavía no terminaste ninguna descarga.</string>
     <string name="clipboard_titulo">Link detectado</string>
     <string name="clipboard_mensaje">Hay un link en el portapapeles. ¿Querés pegarlo?</string>

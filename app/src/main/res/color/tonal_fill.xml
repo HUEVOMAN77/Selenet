@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Relleno sutil para los botones secundarios: vidrio clarito sobre el degradado. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.35" android:color="#1F3EE8B0" android:state_enabled="false" />
+    <item android:color="#333EE8B0" android:state_pressed="true" />
+    <item android:color="#1F3EE8B0" />
+</selector>

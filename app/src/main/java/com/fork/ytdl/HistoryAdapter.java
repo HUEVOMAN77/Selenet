@@ -63,9 +63,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> 
             b.histTitle.setText(task.displayName());
             long size = task.bytes > 0 ? task.bytes : Storage.size(context, task.path);
             String when = task.finishedAt > 0 ? DAY.format(new Date(task.finishedAt)) : "";
-            b.histMeta.setText(Formatter.formatShortFileSize(context, size)
+            String kind = task.label == null ? "" : task.label + " · ";
+            b.histMeta.setText(kind + Formatter.formatShortFileSize(context, size)
                     + (when.isEmpty() ? "" : " · " + when));
             b.histDelete.setVisibility(task.path == null ? View.GONE : View.VISIBLE);
+            Thumbs.show(b.histThumb, task.url);
 
             b.histOpen.setOnClickListener(v -> show(context, task, false));
             b.histShare.setOnClickListener(v -> show(context, task, true));

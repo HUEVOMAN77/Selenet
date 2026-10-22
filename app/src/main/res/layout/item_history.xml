@@ -19,19 +19,40 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!-- Miniatura del video ya bajado -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/Widget.Ytdl.Badge"
-                android:layout_width="@dimen/badge_size_sm"
-                android:layout_height="@dimen/badge_size_sm"
-                app:cardBackgroundColor="@color/state_done_bg">
+                style="@style/Widget.Ytdl.Card.Thumb"
+                android:layout_width="56dp"
+                android:layout_height="74dp">
 
-                <ImageView
-                    android:layout_width="@dimen/icon_size_sm"
-                    android:layout_height="@dimen/icon_size_sm"
-                    android:layout_gravity="center"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_state_done"
-                    app:tint="@color/state_done_fg" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/hist_thumb"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/thumb_placeholder" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/thumb_scrim" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/thumb_play_bg"
+                        android:contentDescription="@null"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_play"
+                        app:tint="@color/on_surface" />
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
@@ -64,7 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="@dimen/space_m"
-            android:background="?attr/colorOutlineVariant" />
+            android:background="@color/glass_stroke" />
 
         <LinearLayout
             android:layout_width="match_parent"

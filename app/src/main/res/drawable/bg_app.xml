@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fondo de toda la app: azul profundo arriba que baja a verde azulado, con un brillo
+  radial menta en la esquina superior derecha. Se usa como windowBackground del tema,
+  asi las tarjetas semitransparentes dejan pasar el degradado.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:centerColor="@color/bg_mid"
+                android:endColor="@color/bg_bottom"
+                android:startColor="@color/bg_top"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:centerX="0.88"
+                android:centerY="0.10"
+                android:endColor="#00000000"
+                android:gradientRadius="46%p"
+                android:startColor="#2E3EE8B0"
+                android:type="radial" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:centerX="0.08"
+                android:centerY="0.78"
+                android:endColor="#00000000"
+                android:gradientRadius="52%p"
+                android:startColor="#264C8DFF"
+                android:type="radial" />
+        </shape>
+    </item>
+</layer-list>

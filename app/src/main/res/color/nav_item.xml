@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono y texto de la barra de navegacion: menta la pestana activa. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/primary" android:state_checked="true" />
+    <item android:color="@color/primary" android:state_selected="true" />
+    <item android:color="@color/on_surface_variant" />
+</selector>

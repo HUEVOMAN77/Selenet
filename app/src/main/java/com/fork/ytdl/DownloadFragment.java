@@ -50,6 +50,22 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         binding.btnAdd.setOnClickListener(v -> add());
         binding.btnClearPart.setOnClickListener(v -> clearParts());
         binding.btnCopyLog.setOnClickListener(v -> copyLog());
+        binding.btnSearch.setOnClickListener(v -> toggleSearch());
+        binding.filterInput.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                adapter.setQuery(s == null ? "" : s.toString());
+                refresh();
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
 
         MainActivity activity = (MainActivity) requireActivity();
         String pending = activity.takePendingUrl();
@@ -250,11 +266,49 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         Toast.makeText(requireContext(), R.string.log_copiado, Toast.LENGTH_SHORT).show();
     }
 
+    /** Abre o cierra el filtro de la cola; al cerrar vuelve a mostrar todo. */
+    private void toggleSearch() {
+        if (binding.filterLayout.getVisibility() == View.VISIBLE) {
+            binding.filterInput.setText("");
+            adapter.setQuery("");
+            binding.filterLayout.setVisibility(View.GONE);
+            hideKeyboard();
+        } else {
+            binding.filterLayout.setVisibility(View.VISIBLE);
+            binding.filterInput.requestFocus();
+            showKeyboard();
+        }
+        refresh();
+    }
+
+    private void showKeyboard() {
+        android.view.inputmethod.InputMethodManager ime =
+                (android.view.inputmethod.InputMethodManager) requireContext()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (ime != null) {
+            ime.showSoftInput(binding.filterInput,
+                    android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void hideKeyboard() {
+        android.view.inputmethod.InputMethodManager ime =
+                (android.view.inputmethod.InputMethodManager) requireContext()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (ime != null) {
+            ime.hideSoftInputFromWindow(binding.filterInput.getWindowToken(), 0);
+        }
+    }
+
     private void refresh() {
         List<Task> tasks = DownloadService.snapshot();
         adapter.submit(tasks);
         boolean empty = adapter.getItemCount() == 0;
         binding.queueEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+        if (empty) {
+            binding.queueEmptyText.setText(adapter.hasQuery()
+                    ? R.string.cola_sin_resultados : R.string.cola_vacia);
+        }
         binding.logText.setText(Logs.global());
         // se guarda la vista, no el binding: el post corre despues y el binding ya puede
         // estar borrado si la pestaña cambio mientras tanto
