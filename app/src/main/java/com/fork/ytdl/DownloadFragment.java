@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.fork.ytdl.databinding.FragmentDownloadBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
 
     private FragmentDownloadBinding binding;
     private final QueueAdapter adapter = new QueueAdapter();
+    private static String asked;
 
     @Nullable
     @Override
@@ -44,6 +46,8 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         String pending = activity.takePendingUrl();
         if (pending != null) {
             binding.urlInput.setText(pending);
+        } else {
+            offerClipboard();
         }
     }
 
@@ -74,15 +78,39 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     }
 
     private void add() {
-        String url = binding.urlInput.getText() == null
+        String typed = binding.urlInput.getText() == null
                 ? "" : binding.urlInput.getText().toString().trim();
-        if (!looksLikeUrl(url)) {
+        String url = firstUrl(typed);
+        if (url == null) {
             Toast.makeText(requireContext(), R.string.link_invalido, Toast.LENGTH_SHORT).show();
             return;
         }
         DownloadService.enqueue(requireContext(), url, Quality.saved(requireContext()));
         binding.urlInput.setText("");
         Toast.makeText(requireContext(), R.string.agregada, Toast.LENGTH_SHORT).show();
+    }
+
+    /** Si hay un link en el portapapeles lo ofrece, pero no descarga nada solo. */
+    private void offerClipboard() {
+        ClipboardManager clipboard =
+                (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard == null || !clipboard.hasPrimaryClip()
+                || clipboard.getPrimaryClip().getItemCount() == 0) {
+            return;
+        }
+        CharSequence raw = clipboard.getPrimaryClip().getItemAt(0).coerceToText(requireContext());
+        final String url = firstUrl(raw == null ? "" : raw.toString());
+        if (url == null || url.equals(asked)) {
+            return;
+        }
+        asked = url;
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.clipboard_titulo)
+                .setMessage(getString(R.string.clipboard_mensaje) + "\n\n" + url)
+                .setPositiveButton(R.string.clipboard_pegar, (dialog, which) ->
+                        binding.urlInput.setText(url))
+                .setNegativeButton(R.string.clipboard_descartar, null)
+                .show();
     }
 
     private void clearParts() {
@@ -108,10 +136,22 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         binding.logScroll.post(() -> binding.logScroll.fullScroll(View.FOCUS_DOWN));
     }
 
-    private static boolean looksLikeUrl(String text) {
-        if (text.length() < 5 || text.indexOf('.') < 0 || text.indexOf(' ') >= 0) {
-            return false;
+    private static final java.util.regex.Pattern HTTP =
+            java.util.regex.Pattern.compile("https?://[^\\s\"'<>]+");
+    private static final java.util.regex.Pattern BARE =
+            java.util.regex.Pattern.compile("(www\\.[^\\s/]+\\.[a-z]{2,}[^\\s]*"
+                    + "|[\\w-]+\\.[a-z]{2,}(/[^\\s]*)?)");
+
+    /** Sacar el primer link de un texto, o null si no hay ninguno. */
+    static String firstUrl(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return null;
         }
-        return text.startsWith("http") || text.contains("www.") || text.contains("://");
+        java.util.regex.Matcher matcher = HTTP.matcher(text);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        String trimmed = text.trim();
+        return BARE.matcher(trimmed).matches() ? "https://" + trimmed : null;
     }
 }

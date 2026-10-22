@@ -1,8 +1,6 @@
 package com.fork.ytdl;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -11,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fork.ytdl.databinding.ItemQueueBinding;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,31 +76,14 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
 
             b.itemAction.setOnClickListener(v -> act());
             b.itemCancel.setOnClickListener(v -> DownloadService.cancel(context, task));
-            b.getRoot().setOnClickListener(v -> openExternal(context, task));
         }
 
         private void act() {
             Context context = b.getRoot().getContext();
-            if (Task.PAUSED.equals(task.state)) {
-                DownloadService.resume(context, task);
-            } else if (Task.ERROR.equals(task.state)) {
+            if (Task.PAUSED.equals(task.state) || Task.ERROR.equals(task.state)) {
                 DownloadService.resume(context, task);
             } else {
                 DownloadService.pause(context, task);
-            }
-        }
-
-        private void openExternal(Context context, Task task) {
-            File file = new File(task.path == null ? "" : task.path);
-            if (!file.exists()) {
-                return;
-            }
-            Uri uri = Uri.parse(file.getAbsolutePath());
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, "video/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            try {
-                context.startActivity(intent);
-            } catch (Exception ignored) {
             }
         }
     }

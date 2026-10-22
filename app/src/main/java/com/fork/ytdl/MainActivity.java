@@ -1,14 +1,24 @@
 package com.fork.ytdl;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fork.ytdl.databinding.ActivityMainBinding;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static final int ASK_STORAGE = 21;
 
     private ActivityMainBinding binding;
     private String pendingUrl;
@@ -28,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         if (saved == null) {
             binding.bottomNav.setSelectedItemId(R.id.nav_descargas);
         }
+        askStorageIfNeeded();
     }
 
     @Override
@@ -38,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
             pendingUrl = url;
             binding.bottomNav.setSelectedItemId(R.id.nav_descargas);
             show(R.id.nav_descargas);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == ASK_STORAGE && results.length > 0
+                && results[0] != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, R.string.permiso_saf, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -53,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
         String text = intent.getStringExtra(Intent.EXTRA_TEXT);
-        return text == null || text.trim().isEmpty() ? null : text.trim();
+        return text == null ? null : DownloadFragment.firstUrl(text);
     }
 
     private void show(int itemId) {
@@ -68,5 +89,19 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_host, fragment)
                 .commit();
+    }
+
+    /** Con targetSdk 28 la carpeta publica de videos necesita este permiso runtime. */
+    private void askStorageIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Storage.tree(this) != null
+                || Storage.sharedDir() != null) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            List<String> needed = new ArrayList<>();
+            needed.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            requestPermissions(needed.toArray(new String[0]), ASK_STORAGE);
+        }
     }
 }

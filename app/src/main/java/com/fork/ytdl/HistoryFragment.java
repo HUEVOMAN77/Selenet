@@ -68,11 +68,11 @@ public class HistoryFragment extends Fragment implements DownloadService.Listene
                 adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
     }
 
-    /** Terminadas con archivo disponible. Cuando exista la base, esto va a leer de ahi. */
+    /** Terminadas y todavia con archivo disponible, leidas de la base. */
     static List<Task> load(Context context) {
         List<Task> done = new ArrayList<>();
-        for (Task task : DownloadService.snapshot()) {
-            if (Task.DONE.equals(task.state)) {
+        for (Task task : HistoryDb.get(context).all()) {
+            if (Storage.exists(context, task.path)) {
                 done.add(task);
             }
         }

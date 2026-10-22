@@ -39,6 +39,8 @@
     <string name="ajustes_pendiente">todavía no se actualiza (usa el del APK)</string>
     <string name="ajustes_carpeta">Carpeta de destino</string>
     <string name="ajustes_cambiar_carpeta">Elegir carpeta</string>
+    <string name="carpeta_elegida">Ahora se guarda en: %1$s</string>
+    <string name="carpeta_interna">Volviste a la carpeta de la aplicación</string>
     <string name="ajustes_calidad">Calidad recordada</string>
     <string name="ajustes_ninguna">Todavía no elegiste ninguna</string>
     <string name="ajustes_avanzado">Avanzado</string>

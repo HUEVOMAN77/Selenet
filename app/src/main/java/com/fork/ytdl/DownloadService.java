@@ -192,7 +192,7 @@ public class DownloadService extends Service {
         if (app == null) {
             return 0;
         }
-        File dir = outputDir(app);
+        File dir = Storage.engineDir(app);
         List<String> owned = new ArrayList<>();
         for (Task task : snapshot()) {
             if (task.isLive() && task.tmp != null) {
@@ -222,15 +222,6 @@ public class DownloadService extends Service {
             }
         }
         return deleted;
-    }
-
-    public static File outputDir(Context context) {
-        File dir = new File(context.getExternalFilesDir(null), "downloads");
-        if (!dir.exists() && !dir.mkdirs()) {
-            dir = new File(context.getFilesDir(), "downloads");
-            dir.mkdirs();
-        }
-        return dir;
     }
 
     // ---------------------------------------------------------------- servicio
@@ -351,7 +342,7 @@ public class DownloadService extends Service {
         boolean ok;
         try {
             ok = Boolean.TRUE.equals(
-                    Engine.runResult(task.id, task.url, outputDir(this), task.fmt, sink));
+                    Engine.runResult(task.id, task.url, Storage.engineDir(this), task.fmt, sink));
         } catch (Exception e) {
             ok = false;
             task.errorKind = "error";
@@ -371,7 +362,11 @@ public class DownloadService extends Service {
             task.state = Task.DONE;
             task.percent = 100;
             task.finishedAt = System.currentTimeMillis();
-            Logs.append(task, "terminada: " + task.path);
+            task.path = task.path == null ? null : Storage.publish(this, task.path);
+            task.bytes = Storage.size(this, task.path);
+            Storage.scan(this, task.path);
+            HistoryDb.get(this).put(task);
+            Logs.append(task, "terminada: " + Storage.nameOf(task.path));
         } else {
             String kind = task.errorKind == null ? "error" : task.errorKind;
             boolean network = "network".equals(kind);
@@ -558,7 +553,9 @@ public class DownloadService extends Service {
         JSONArray array = new JSONArray();
         synchronized (QUEUE) {
             for (Task task : QUEUE) {
-                array.put(task.toJson());
+                if (task.isLive()) {
+                    array.put(task.toJson());
+                }
             }
         }
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -580,10 +577,7 @@ public class DownloadService extends Service {
                         task.state = Task.QUEUED;
                     }
                     if (Task.DONE.equals(task.state)) {
-                        File file = task.path == null ? null : new File(task.path);
-                        if (file == null || !file.exists()) {
-                            continue;
-                        }
+                        continue;   // las terminadas viven en la base del historial
                     }
                     QUEUE.add(task);
                 }
