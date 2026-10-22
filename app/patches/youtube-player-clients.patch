@@ -1,3 +1,6 @@
+# Permite elegir los clientes de YouTube desde YoutubeDL(params).
+# Sin esto el extractor siempre usa UN cliente y el audio se corta con HTTP 403.
+# Aplicar en HUEVOMAN77/youtube-dl (commit 956b8c5855) antes de generar el wheel.
 diff --git a/youtube_dl/extractor/youtube.py b/youtube_dl/extractor/youtube.py
 index 81a0191..24697d5 100644
 --- a/youtube_dl/extractor/youtube.py
