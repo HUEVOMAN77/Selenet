@@ -66,6 +66,10 @@ _NETWORK = re.compile(
     r'connection reset|connection aborted|temporary failure in name resolution|'
     r'remote end closed|ssl|http error 5\d\d|getaddrinfo|network',
     re.I)
+_FORBIDDEN = re.compile(
+    r'http error 403|forbidden|giving up after \d+ fragment retries|'
+    r'sign in to confirm|not a bot',
+    re.I)
 _PRIVATE = re.compile(r'private|log in|cookies|age restricted|members only|frs', re.I)
 _UNAVAILABLE = re.compile(
     r'not available|no longer|removed|unplayable|geo|region|'
@@ -76,6 +80,8 @@ _FORMAT = re.compile(r'requested format|format .{0,40}not (found|available)|no f
 
 
 def _classify(text):
+    if _FORBIDDEN.search(text):
+        return 'forbidden'
     if _SPACE.search(text):
         return 'space'
     if _UNSUPPORTED.search(text):

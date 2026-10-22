@@ -83,6 +83,9 @@ public class SettingsFragment extends Fragment {
         refreshDir();
         binding.lblQuality.setText(Quality.savedLabel(requireContext()));
         binding.lblEngineHint.setText(getString(R.string.motor_sugerencia));
+        binding.switchLog.setChecked(Storage.logVisible(requireContext()));
+        binding.switchLog.setOnCheckedChangeListener((button, on) ->
+                Storage.setLogVisible(requireContext(), on));
         refreshEngine();
     }
 

@@ -69,6 +69,8 @@
     <string name="ajustes_calidad">Calidad recordada</string>
     <string name="ajustes_ninguna">Todavía no elegiste ninguna</string>
     <string name="ajustes_avanzado">Avanzado</string>
+    <string name="ajustes_registro">Registro técnico</string>
+    <string name="ajustes_registro_sub">Muestra la actividad del motor al pie de la pantalla de Descargas. Sirve para ver qué falló cuando una descarga no arranca; si no lo estás usando, dejalo apagado.</string>
     <string name="ajustes_hibrido">Descargar en la PC por red</string>
     <string name="ajustes_hibrido_off">Activá el modo híbrido desde la PC para habilitar esto.</string>
     <string name="modo_hibrido">Modo híbrido: el link lo procesa tu PC</string>
@@ -86,6 +88,7 @@
     <string name="err_no_disponible">El video no está disponible (borrado, restringido por región o edad).</string>
     <string name="err_sitio">Ese sitio no lo soporta el motor.</string>
     <string name="err_red">Sin conexión o se cortó a mitad. Reintento solo.</string>
+    <string name="err_bloqueado">YouTube bloqueó esta descarga (403). No es tu conexión: el motor pidió un formato que el sitio ya no entrega sin verificación. Probá con otra calidad, esperá unos minutos y reintentá, o actualizá el motor desde Ajustes.</string>
     <string name="err_espacio">No hay espacio suficiente en el almacenamiento.</string>
     <string name="err_formato">No encontré un formato que se pueda bajar sin merge.</string>
     <string name="err_generico">Fallo: %1$s</string>

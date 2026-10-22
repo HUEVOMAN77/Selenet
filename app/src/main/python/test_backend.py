@@ -40,6 +40,9 @@ class TestBackend(unittest.TestCase):
 
     def test_classify(self):
         self.assertEqual(backend._classify("urlopen error: timed out"), "network")
+        self.assertEqual(backend._classify("HTTP Error 403: Forbidden"), "forbidden")
+        self.assertEqual(
+            backend._classify("ERROR: giving up after 3 fragment retries"), "forbidden")
         self.assertEqual(backend._classify("no space left on device"), "space")
         self.assertEqual(backend._classify("This video is private"), "private")
         self.assertEqual(backend._classify("Requested format is not available"), "format")

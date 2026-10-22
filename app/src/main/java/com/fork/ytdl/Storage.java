@@ -27,9 +27,21 @@ public final class Storage {
 
     private static final String PREFS = "ajustes";
     private static final String KEY_TREE = "carpeta";
+    private static final String KEY_LOG = "log_visible";
     private static final String ALBUM = "YTDL Fork";
 
     private Storage() {
+    }
+
+    // ---------------------------------------------------------------- registro tecnico
+
+    /** El log del motor esta oculto por defecto; se habilita desde Ajustes. */
+    public static boolean logVisible(Context context) {
+        return prefs(context).getBoolean(KEY_LOG, false);
+    }
+
+    public static void setLogVisible(Context context, boolean visible) {
+        prefs(context).edit().putBoolean(KEY_LOG, visible).apply();
     }
 
     // ---------------------------------------------------------------- carpeta elegida

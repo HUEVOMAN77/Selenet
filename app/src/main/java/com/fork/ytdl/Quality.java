@@ -8,7 +8,8 @@ public final class Quality {
     public static final String BEST = "best";
     public static final String MP4 = "best[ext=mp4]/best";
     public static final String P360 = "18";
-    public static final String AUDIO = "bestaudio[ext=m4a]/bestaudio";
+    /** Un solo archivo directo si el cliente lo ofrece; si no, el mejor audio disponible. */
+    public static final String AUDIO = "bestaudio[protocol=https]/bestaudio[ext=m4a]/bestaudio";
     public static final String SMALL = "worst";
 
     private static final String PREF = "ajustes";

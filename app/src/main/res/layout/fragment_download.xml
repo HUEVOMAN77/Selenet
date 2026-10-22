@@ -173,12 +173,14 @@
             android:textAppearance="@style/Text.Ytdl.Empty" />
     </LinearLayout>
 
-    <!-- Actividad del motor -->
+    <!-- Actividad del motor: oculta salvo que se habilite en Ajustes -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/log_card"
         style="@style/Widget.Ytdl.Card.Tonal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_s">
+        android:layout_marginTop="@dimen/space_s"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"

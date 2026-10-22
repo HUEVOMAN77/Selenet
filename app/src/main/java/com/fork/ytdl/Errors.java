@@ -24,6 +24,8 @@ public final class Errors {
                 return context.getString(R.string.err_sitio);
             case "network":
                 return context.getString(R.string.err_red);
+            case "forbidden":
+                return context.getString(R.string.err_bloqueado);
             case "space":
                 return context.getString(R.string.err_espacio);
             case "format":

@@ -64,6 +64,8 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     public void onResume() {
         super.onResume();
         DownloadService.addListener(this);
+        binding.logCard.setVisibility(
+                Storage.logVisible(requireContext()) ? View.VISIBLE : View.GONE);
         refresh();
     }
 
