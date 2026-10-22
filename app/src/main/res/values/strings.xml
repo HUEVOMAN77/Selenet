@@ -6,6 +6,19 @@
     <string name="tab_historial">Historial</string>
     <string name="tab_ajustes">Ajustes</string>
 
+    <string name="portada_descargas">Descargas</string>
+    <string name="portada_descargas_sub">Pegá un link, elegí calidad y listo.</string>
+    <string name="portada_historial">Historial</string>
+    <string name="portada_historial_sub">Lo que ya se bajó, con su ruta.</string>
+    <string name="portada_ajustes">Ajustes</string>
+    <string name="portada_ajustes_sub">Motor, carpeta y calidad.</string>
+
+    <string name="seccion_cola">En cola</string>
+    <string name="seccion_log">Actividad del motor</string>
+    <string name="fmt_todos">Todos</string>
+    <string name="fmt_video">Solo MP4</string>
+    <string name="fmt_audio">Solo audio</string>
+
     <string name="hint_url">Pegá el link del video</string>
     <string name="btn_agregar">Agregar a la cola</string>
     <string name="btn_descargar">Descargar</string>

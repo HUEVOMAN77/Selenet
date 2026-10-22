@@ -3,11 +3,13 @@ package com.fork.ytdl;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fork.ytdl.databinding.ItemQueueBinding;
@@ -64,6 +66,10 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             b.itemProgress.setProgress(Math.max(0, Math.min(100, task.percent)));
             b.itemState.setText(stateLabel(context, task));
             b.itemState.setTextColor(stateColor(context, task));
+            b.itemBadge.setImageResource(stateIcon(task));
+            ImageViewCompat.setImageTintList(b.itemBadge,
+                    ColorStateList.valueOf(stateColor(context, task)));
+            b.itemBadgeBg.setCardBackgroundColor(stateTint(context, task));
 
             String action;
             if (Task.PAUSED.equals(task.state)) {
@@ -74,6 +80,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
                 action = context.getString(R.string.btn_pausar);
             }
             b.itemAction.setText(action);
+            b.itemAction.setIconResource(actionIcon(task));
             b.itemCancel.setVisibility(
                     Task.QUEUED.equals(task.state) && task.percent == 0
                             ? android.view.View.GONE : android.view.View.VISIBLE);
@@ -146,17 +153,68 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
         return context.getString(R.string.estado_en_espera);
     }
 
+    /** Color fuerte del estado: texto, icono y barra de progreso. */
     private static int stateColor(Context context, Task task) {
-        int color;
+        return context.getColor(stateColorRes(task));
+    }
+
+    /** Fondo tonal del badge circular, del mismo familia que el color fuerte. */
+    private static int stateTint(Context context, Task task) {
+        return context.getColor(stateBgRes(task));
+    }
+
+    private static int stateColorRes(Task task) {
         if (Task.ERROR.equals(task.state)) {
-            color = R.color.bad;
-        } else if (Task.RUNNING.equals(task.state)) {
-            color = R.color.brand;
-        } else if (Task.PAUSED.equals(task.state)) {
-            color = R.color.warn;
-        } else {
-            color = R.color.muted;
+            return R.color.state_error_fg;
         }
-        return context.getColor(color);
+        if (Task.RUNNING.equals(task.state)) {
+            return R.color.state_active_fg;
+        }
+        if (Task.PAUSED.equals(task.state)) {
+            return R.color.state_warn_fg;
+        }
+        if (Task.DONE.equals(task.state)) {
+            return R.color.state_done_fg;
+        }
+        return R.color.state_idle_fg;
+    }
+
+    private static int stateBgRes(Task task) {
+        if (Task.ERROR.equals(task.state)) {
+            return R.color.state_error_bg;
+        }
+        if (Task.RUNNING.equals(task.state)) {
+            return R.color.state_active_bg;
+        }
+        if (Task.PAUSED.equals(task.state)) {
+            return R.color.state_warn_bg;
+        }
+        if (Task.DONE.equals(task.state)) {
+            return R.color.state_done_bg;
+        }
+        return R.color.state_idle_bg;
+    }
+
+    private static int stateIcon(Task task) {
+        if (Task.ERROR.equals(task.state)) {
+            return R.drawable.ic_state_error;
+        }
+        if (Task.RUNNING.equals(task.state)) {
+            return R.drawable.ic_state_running;
+        }
+        if (Task.PAUSED.equals(task.state)) {
+            return R.drawable.ic_state_paused;
+        }
+        if (Task.DONE.equals(task.state)) {
+            return R.drawable.ic_state_done;
+        }
+        return R.drawable.ic_state_wait;
+    }
+
+    private static int actionIcon(Task task) {
+        if (Task.PAUSED.equals(task.state) || Task.ERROR.equals(task.state)) {
+            return R.drawable.ic_state_running;
+        }
+        return R.drawable.ic_state_paused;
     }
 }

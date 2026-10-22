@@ -1,89 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingEnd="@dimen/screen_padding"
+    android:paddingTop="@dimen/space_xxl"
+    android:paddingBottom="@dimen/space_m">
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/hint_url">
+        android:text="@string/portada_descargas"
+        android:textAppearance="@style/Text.Ytdl.ScreenTitle" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/url_input"
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/portada_descargas_sub"
+        android:textAppearance="@style/Text.Ytdl.ScreenSubtitle" />
+
+    <!-- Bloque principal: link + formato + accion -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Ytdl.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone"
-            android:inputType="textUri"
-            android:maxLines="2" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding">
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/fmt_toggle_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:singleSelection="true"
-        app:selectionRequired="true"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Ytdl.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_url"
+                app:startIconDrawable="@drawable/ic_link">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_fmt_auto"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:text="Todos" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/url_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:inputType="textUri"
+                    android:maxLines="2"
+                    android:textAppearance="@style/Text.Ytdl.ItemBody" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_fmt_mp4"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:text="Solo MP4" />
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/fmt_toggle_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                app:selectionRequired="true"
+                app:singleSelection="true">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_fmt_mp3"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            android:text="Solo Audio" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_fmt_auto"
+                    style="@style/Widget.Ytdl.Segment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/fmt_todos" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_fmt_mp4"
+                    style="@style/Widget.Ytdl.Segment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/fmt_video" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_add"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/btn_agregar" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_fmt_mp3"
+                    style="@style/Widget.Ytdl.Segment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/fmt_audio" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_clear_part"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/btn_borrar_part" />
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add"
+                style="@style/Widget.Ytdl.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:text="@string/btn_agregar"
+                app:icon="@drawable/ic_state_running" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_clear_part"
+                style="@style/Widget.Ytdl.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/space_xs"
+                android:minHeight="40dp"
+                android:text="@string/btn_borrar_part" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Estado de lectura de formatos -->
     <LinearLayout
         android:id="@+id/status_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/space_m"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:visibility="gone">
@@ -91,53 +119,102 @@
         <ProgressBar
             android:layout_width="16dp"
             android:layout_height="16dp"
-            android:indeterminateTint="@color/brand" />
+            android:indeterminateTint="?attr/colorPrimary" />
 
         <TextView
             android:id="@+id/status_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/muted"
-            android:textSize="13sp" />
+            android:layout_marginStart="@dimen/space_s"
+            android:textAppearance="@style/Text.Ytdl.ItemMeta" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:text="@string/seccion_cola"
+        android:textAppearance="@style/Text.Ytdl.SectionTitle" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/queue_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/space_s"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="8dp" />
+        android:overScrollMode="never"
+        android:paddingBottom="@dimen/space_s" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/queue_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:gravity="center"
-        android:padding="12dp"
-        android:text="@string/cola_vacia"
-        android:textColor="@color/muted"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:padding="@dimen/space_xxl"
+        android:visibility="gone">
 
+        <ImageView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:alpha="0.38"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_download"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:gravity="center"
+            android:text="@string/cola_vacia"
+            android:textAppearance="@style/Text.Ytdl.Empty" />
+    </LinearLayout>
+
+    <!-- Actividad del motor -->
     <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Ytdl.Card.Tonal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardElevation="1dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_marginTop="@dimen/space_s">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="@dimen/card_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/seccion_log"
+                    android:textAppearance="@style/Text.Ytdl.SectionTitle" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_copy_log"
+                    style="@style/Widget.Ytdl.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="40dp"
+                    android:text="@string/btn_copiar_log" />
+            </LinearLayout>
 
             <ScrollView
                 android:id="@+id/log_scroll"
                 android:layout_width="match_parent"
-                android:layout_height="96dp">
+                android:layout_height="@dimen/log_height"
+                android:layout_marginTop="@dimen/space_s"
+                android:overScrollMode="never"
+                android:scrollbars="none">
 
                 <TextView
                     android:id="@+id/log_text"
@@ -145,16 +222,8 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
                     android:textIsSelectable="true"
-                    android:textSize="11sp" />
+                    android:textAppearance="@style/Text.Ytdl.Log" />
             </ScrollView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_copy_log"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/btn_copiar_log" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

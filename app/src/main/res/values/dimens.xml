@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- espaciado de 4pt -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_s">8dp</dimen>
+    <dimen name="space_m">12dp</dimen>
+    <dimen name="space_l">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_xxl">28dp</dimen>
+
+    <dimen name="screen_padding">20dp</dimen>
+    <dimen name="card_padding">18dp</dimen>
+    <dimen name="card_gap">14dp</dimen>
+
+    <dimen name="badge_size">44dp</dimen>
+    <dimen name="badge_size_sm">36dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="icon_size_sm">18dp</dimen>
+
+    <dimen name="progress_height">6dp</dimen>
+    <dimen name="log_height">104dp</dimen>
+    <dimen name="list_item_min">56dp</dimen>
+</resources>

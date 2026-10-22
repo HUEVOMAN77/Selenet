@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ============ TIPOGRAFIA ============ -->
+    <style name="Text.Ytdl.ScreenTitle" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">?attr/colorOnBackground</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="Text.Ytdl.ScreenSubtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Text.Ytdl.SectionTitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:letterSpacing">0.09</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Text.Ytdl.ItemTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="Text.Ytdl.ItemBody" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Text.Ytdl.ItemMeta" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Text.Ytdl.State" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="Text.Ytdl.Log" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Text.Ytdl.Empty" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- ============ TARJETAS ============ -->
+    <style name="Widget.Ytdl.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+        <item name="cardCornerRadius">@dimen/space_xxl</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Card.Tonal" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="cardCornerRadius">@dimen/space_xxl</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Card.Queue" parent="Widget.Ytdl.Card">
+        <item name="cardCornerRadius">26dp</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
+    <!-- Circulo tonal para el icono de estado o de seccion -->
+    <style name="Widget.Ytdl.Badge" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">22dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardBackgroundColor">?attr/colorSecondaryContainer</item>
+    </style>
+
+    <style name="Shape.Ytdl.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ============ CONTROLES ============ -->
+    <style name="Widget.Ytdl.Button" parent="Widget.Material3.Button">
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:paddingStart">@dimen/space_xl</item>
+        <item name="android:paddingEnd">@dimen/space_xl</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Ytdl.Pill</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/space_s</item>
+        <item name="iconSize">20dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Ytdl.Pill</item>
+    </style>
+
+    <style name="Widget.Ytdl.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Ytdl.Pill</item>
+    </style>
+
+    <style name="Widget.Ytdl.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:letterSpacing">0.01</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Ytdl.Pill</item>
+    </style>
+
+    <!-- Segmentada para elegir formato -->
+    <style name="Widget.Ytdl.Segment" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:minHeight">46dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Input" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/space_xl</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/space_xl</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/space_xl</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/space_xl</item>
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Progress" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="trackThickness">@dimen/progress_height</item>
+        <item name="trackCornerRadius">3dp</item>
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSurfaceContainerHighest</item>
+    </style>
+
+    <style name="Widget.Ytdl.Nav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">?attr/colorSurfaceContainerLow</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Ytdl.Nav.Indicator</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Widget.Ytdl.Nav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">?attr/colorSecondaryContainer</item>
+        <item name="android:width">76dp</item>
+        <item name="android:height">32dp</item>
+        <item name="marginHorizontal">10dp</item>
+        <item name="shapeAppearance">@style/Shape.Ytdl.Pill</item>
+    </style>
+</resources>

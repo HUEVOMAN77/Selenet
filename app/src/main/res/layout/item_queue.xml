@@ -1,79 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Ytdl.Card.Queue"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardElevation="1dp">
+    android:layout_marginBottom="@dimen/space_m"
+    android:checkable="false"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:padding="@dimen/card_padding">
 
-        <TextView
-            android:id="@+id/item_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textStyle="bold" />
+        <!-- Badge circular de estado -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/item_badge_bg"
+            style="@style/Widget.Ytdl.Badge"
+            android:layout_width="@dimen/badge_size"
+            android:layout_height="@dimen/badge_size"
+            android:layout_gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/item_subtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/muted"
-            android:textSize="12sp" />
-
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/item_progress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:trackThickness="5dp" />
+            <ImageView
+                android:id="@+id/item_badge"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_state_wait" />
+        </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_marginStart="@dimen/space_m"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/item_state"
-                android:layout_width="0dp"
+                android:id="@+id/item_title"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/Text.Ytdl.ItemTitle" />
 
             <TextView
-                android:id="@+id/item_speed"
-                android:layout_width="wrap_content"
+                android:id="@+id/item_subtitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:textColor="@color/muted"
-                android:textSize="12sp" />
+                android:layout_marginTop="2dp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/item_progress"
+                style="@style/Widget.Ytdl.Progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/item_state"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textAppearance="@style/Text.Ytdl.State" />
+
+                <TextView
+                    android:id="@+id/item_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_s"
+                    android:fontFeatureSettings="tnum"
+                    android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="end"
+            android:orientation="vertical">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/item_action"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Ytdl.Button.Tonal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minWidth="0dp"
-                android:textSize="12sp" />
+                android:minHeight="40dp"
+                android:paddingStart="@dimen/space_m"
+                android:paddingEnd="@dimen/space_m"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_state_paused"
+                app:iconGravity="start"
+                app:iconSize="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/item_cancel"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:contentDescription="@string/btn_cancelar"
                 android:minWidth="0dp"
-                android:text="@string/btn_cancelar"
-                android:textSize="12sp" />
+                android:minHeight="0dp"
+                app:icon="@drawable/ic_close"
+                app:iconSize="@dimen/icon_size_sm" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
