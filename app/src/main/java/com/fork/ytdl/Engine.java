@@ -15,8 +15,17 @@ public final class Engine {
     public static final String CANCEL = "cancel";
 
     private static PyObject backend;
+    private static boolean routed;
 
     private Engine() {
+    }
+
+    public static File motorDir(Context context) {
+        return new File(context.getFilesDir(), "motor");
+    }
+
+    public static File activeDir(Context context) {
+        return new File(motorDir(context), "activo");
     }
 
     public static synchronized void init(Context context) {
@@ -25,6 +34,16 @@ public final class Engine {
         }
         if (backend == null) {
             backend = Python.getInstance().getModule("backend");
+        }
+        if (!routed) {
+            routed = true;
+            File activo = activeDir(context);
+            Object dir = activo.isDirectory() ? activo.getAbsolutePath() : null;
+            try {
+                backend.callAttr("use", dir);
+            } catch (Exception e) {
+                Logs.append(null, "motor externo: " + e);
+            }
         }
     }
 
@@ -68,6 +87,36 @@ public final class Engine {
     public static void forget(String taskId) {
         if (backend != null) {
             backend.callAttr("forget", taskId);
+        }
+    }
+
+    /** Instala el motor bajado; devuelve el JSON que produce backend.install(). */
+    public static String install(Context context, String tarPath, boolean force) {
+        init(context);
+        Object dir = motorDir(context).getAbsolutePath();
+        return backend.callAttr("install", tarPath, dir, force).toString();
+    }
+
+    /** Vuelve al motor del APK y borra lo descargado. */
+    public static String reset(Context context) {
+        init(context);
+        String version = backend.callAttr("reset").toString();
+        deleteTree(activeDir(context));
+        return version;
+    }
+
+    private static void deleteTree(File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        File[] children = file.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                deleteTree(child);
+            }
+        }
+        if (!file.delete()) {
+            Logs.append(null, "no se pudo borrar " + file.getName());
         }
     }
 }

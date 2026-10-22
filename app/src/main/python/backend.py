@@ -1,15 +1,18 @@
+import importlib
+import importlib.util
+import io
 import json
 import os
 import re
+import shutil
+import sys
+import tarfile
 import threading
 
 import youtube_dl
 from youtube_dl.utils import DownloadError
 
-try:
-    from youtube_dl.version import __version__ as ENGINE_VERSION
-except ImportError:
-    ENGINE_VERSION = 'desconocida'
+_SOURCE = 'apk'
 
 
 class Abort(Exception):
@@ -20,8 +23,16 @@ _CONTROLS = {}
 _LOCK = threading.Lock()
 
 
+def _read_version():
+    try:
+        from youtube_dl.version import __version__
+        return __version__
+    except Exception:
+        return 'desconocida'
+
+
 def engine_info():
-    return ['youtube-dl', ENGINE_VERSION, 'apk']
+    return ['youtube-dl', _read_version(), _SOURCE]
 
 
 def register(task_id):
@@ -82,6 +93,14 @@ def _classify(text):
 
 def retryable(kind):
     return kind == 'network'
+
+
+def _error_class():
+    """DownloadError del motor activo; cambia si se carga uno descargado."""
+    try:
+        return youtube_dl.utils.DownloadError
+    except AttributeError:
+        return DownloadError
 
 
 class _SinkLogger(object):
@@ -188,7 +207,7 @@ def run(task_id, url, outdir, fmt, sink):
                     raise
     except Abort:
         stop = _stop_action(task_id) or 'cancel'
-    except DownloadError as err:
+    except _error_class() as err:
         if _stop_action(task_id):
             stop = _stop_action(task_id)
         else:
@@ -332,7 +351,7 @@ def formats(url):
             info = ydl.extract_info(url, download=False)
     except Abort:
         return json.dumps({'ok': False, 'kind': 'error', 'error': 'cancelado'})
-    except DownloadError as err:
+    except _error_class() as err:
         return json.dumps({'ok': False, 'kind': _classify(str(err)), 'error': str(err)})
     except Exception as err:
         return json.dumps({'ok': False,
@@ -361,3 +380,150 @@ def formats(url):
         'duration': int(info.get('duration') or 0),
         'formats': pick(items),
     })
+
+
+# ------------------------------------------------------------- actualizar motor
+
+
+def _drop_modules():
+    for name in list(sys.modules):
+        if name == 'youtube_dl' or name.startswith('youtube_dl.'):
+            del sys.modules[name]
+
+
+def _load_from(lib_dir):
+    package = os.path.join(lib_dir, 'youtube_dl')
+    init = os.path.join(package, '__init__.py')
+    if not os.path.isfile(init):
+        raise ValueError('no hay paquete youtube_dl en ' + lib_dir)
+    spec = importlib.util.spec_from_file_location(
+        'youtube_dl', init, submodule_search_locations=[package])
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['youtube_dl'] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def activate(lib_dir):
+    """Carga el motor de lib_dir; si algo falla deja el del APK. Devuelve la version."""
+    global youtube_dl, _SOURCE
+    _drop_modules()
+    if lib_dir:
+        try:
+            youtube_dl = _load_from(lib_dir)
+            _SOURCE = 'descargado'
+            return _read_version()
+        except Exception:
+            _drop_modules()
+    youtube_dl = importlib.import_module('youtube_dl')
+    _SOURCE = 'apk'
+    return _read_version()
+
+
+def use(lib_dir):
+    """Lo llama Java al arrancar para recuperar el motor ya descargado."""
+    if not lib_dir or not os.path.isdir(os.path.join(lib_dir, 'youtube_dl')):
+        return activate(None)
+    return activate(lib_dir)
+
+
+def reset():
+    return activate(None)
+
+
+def _tuple_version(text):
+    parts = []
+    for piece in (text or '').split('.'):
+        parts.append(int(piece) if piece.isdigit() else 0)
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts[:3])
+
+
+def _peek_version(dir_path):
+    try:
+        with io.open(os.path.join(dir_path, 'youtube_dl', 'version.py'),
+                     encoding='utf-8') as handle:
+            for line in handle:
+                match = re.match(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", line.strip())
+                if match:
+                    return match.group(1)
+    except Exception:
+        pass
+    return ''
+
+
+def _extract(tar_path, out_dir):
+    """Descomprime solo el paquete youtube_dl del tarball, sin salirse de out_dir."""
+    root = os.path.normpath(out_dir)
+    written = 0
+    with tarfile.open(tar_path, 'r:*') as archive:
+        for member in archive:
+            if not member.isfile():
+                continue
+            parts = member.name.split('/')
+            if len(parts) < 3 or parts[1] != 'youtube_dl' or '..' in parts:
+                continue
+            relative = '/'.join(parts[2:])
+            destination = os.path.normpath(os.path.join(root, relative))
+            if not destination.startswith(root + os.sep):
+                continue
+            parent = os.path.dirname(destination)
+            if not os.path.isdir(parent):
+                os.makedirs(parent)
+            source = archive.extractfile(member)
+            if source is None:
+                continue
+            try:
+                with source, io.open(destination, 'wb') as out:
+                    shutil.copyfileobj(source, out, 65536)
+            finally:
+                source.close()
+            written += 1
+    return written
+
+
+def install(tar_path, lib_dir, force=False):
+    """Instala el motor del tarball si es mas nuevo; si no, deja vigente el anterior."""
+    current = _read_version()
+    staging = os.path.join(lib_dir, '.nuevo')
+    activo = os.path.join(lib_dir, 'activo')
+    try:
+        if not os.path.isdir(lib_dir):
+            os.makedirs(lib_dir)
+        if os.path.isdir(staging):
+            shutil.rmtree(staging)
+        # _extract suelta el contenido del paquete dentro del directorio que le den
+        package = os.path.join(staging, 'youtube_dl')
+        os.makedirs(package)
+        written = _extract(tar_path, package)
+        nuevo = _peek_version(staging)
+        if written == 0 or not nuevo:
+            return json.dumps({'ok': False, 'kind': 'format',
+                               'error': 'el paquete no trae youtube_dl'})
+        if not force and _tuple_version(nuevo) <= _tuple_version(current):
+            return json.dumps({'ok': False, 'kind': 'igual', 'version': current,
+                               'nueva': nuevo})
+        if os.path.isdir(activo):
+            shutil.rmtree(activo)
+        os.rename(staging, activo)
+        version = activate(activo)
+        if _SOURCE != 'descargado':
+            # el paquete bajo no arranca: se descarta para no reintentarlo al reiniciar
+            shutil.rmtree(activo, True)
+            return json.dumps({'ok': False, 'kind': 'format', 'version': version,
+                               'error': 'el motor descargado no arranco, sigue el del APK'})
+        return json.dumps({'ok': True, 'anterior': current, 'version': version,
+                           'origen': _SOURCE, 'archivos': written})
+    except Exception as err:
+        return json.dumps({'ok': False,
+                           'kind': _classify('%s: %s' % (type(err).__name__, err)),
+                           'error': str(err)})
+    finally:
+        if os.path.isdir(staging):
+            shutil.rmtree(staging, True)
+        try:
+            if os.path.isfile(tar_path):
+                os.remove(tar_path)
+        except OSError:
+            pass
