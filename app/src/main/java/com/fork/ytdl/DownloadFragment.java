@@ -116,11 +116,17 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             return;
         }
         if (binding.btnFmtMp4.isChecked()) {
-            enqueue(url, Quality.MP4, Quality.label(requireContext(), Quality.MP4));
+            // la resolucion elegida en Ajustes; si esta guardado "Solo audio" se usa la mejor
+            Context context = requireContext();
+            String spec = Quality.savedVideo(context);
+            enqueue(url, spec, Quality.label(context, spec));
             return;
         }
         if (binding.btnFmtMp3.isChecked()) {
-            enqueue(url, Quality.AUDIO, Quality.label(requireContext(), Quality.AUDIO));
+            // la calidad de audio elegida en Ajustes (m4a al final, siempre sin merge)
+            Context context = requireContext();
+            String spec = Quality.savedAudio(context);
+            enqueue(url, spec, Quality.savedAudioLabel(context));
             return;
         }
         readFormats(url);
@@ -166,9 +172,12 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         Context context = requireContext();
         String[] labels = new String[result.options.size()];
         String saved = Quality.saved(context);
+        int savedHeight = Quality.heightOf(saved);
         for (int i = 0; i < labels.length; i++) {
             Formats.Option option = result.options.get(i);
-            labels[i] = option.label(context) + (option.id.equals(saved) ? "  ✓" : "");
+            boolean remembered = option.id.equals(saved)
+                    || (savedHeight > 0 && option.height == savedHeight && !option.needsMerge());
+            labels[i] = option.label(context) + (remembered ? "  ✓" : "");
         }
         new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.fmt_titulo)
@@ -191,7 +200,13 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
 
     private void enqueue(String url, String fmt, String label) {
         Context context = requireContext();
-        Quality.save(context, fmt, label);
+        // se recuerda la eleccion como "calidad de Ajustes", pero solo si es una preset:
+        // un id de formato suelto de este video no tiene por que cambiar la proxima descarga
+        if (Quality.isAudio(fmt)) {
+            Quality.saveAudio(context, fmt, label);
+        } else if (Quality.heightOf(fmt) > 0 || Quality.BEST.equals(fmt)) {
+            Quality.save(context, fmt, label);
+        }
         DownloadService.enqueue(context, url, fmt, label);
         binding.urlInput.setText("");
         Toast.makeText(context, R.string.agregada, Toast.LENGTH_SHORT).show();

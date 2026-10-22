@@ -161,6 +161,13 @@
                     android:textAppearance="@style/Text.Ytdl.ItemBody"
                     android:textColor="?attr/colorPrimary" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:text="@string/ajustes_carpeta_nota"
+                    android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -188,10 +195,14 @@
 
         <!-- CALIDAD -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_quality"
             style="@style/Widget.Ytdl.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap">
+            android:layout_marginTop="@dimen/card_gap"
+            android:checkable="false"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -233,6 +244,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_m"
+                    android:textAppearance="@style/Text.Ytdl.ItemBody"
+                    android:textColor="?attr/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/lbl_quality_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:text="@string/ajustes_calidad_nota"
                     android:textAppearance="@style/Text.Ytdl.ItemMeta" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

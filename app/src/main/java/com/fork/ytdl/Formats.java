@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /** Lectura del JSON que devuelve backend.formats(). */
@@ -106,6 +108,19 @@ public final class Formats {
             if (options.isEmpty()) {
                 return Result.fail("format");
             }
+            // el motor devuelve lo mejor primero; la pantalla se muestra al reves,
+            // de la resolucion mas baja a la mas alta, y lo de PC y audio queda al final
+            Collections.sort(options, new Comparator<Option>() {
+                @Override
+                public int compare(Option a, Option b) {
+                    int group = group(a) - group(b);
+                    return group != 0 ? group : a.height - b.height;
+                }
+
+                private int group(Option option) {
+                    return option.isAudio() ? 2 : (option.needsMerge() ? 1 : 0);
+                }
+            });
             return new Result(true, null, root.optString("title", ""),
                     root.optInt("duration"), options);
         } catch (Exception e) {

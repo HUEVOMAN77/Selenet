@@ -23,7 +23,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,8 +82,10 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        binding.cardQuality.setOnClickListener(v -> pickQuality());
+
         refreshDir();
-        binding.lblQuality.setText(Quality.savedLabel(requireContext()));
+        paintQuality();
         binding.lblEngineHint.setText(getString(R.string.motor_sugerencia));
         binding.switchLog.setChecked(Storage.logVisible(requireContext()));
         binding.switchLog.setOnCheckedChangeListener((button, on) ->
@@ -270,7 +274,17 @@ public class SettingsFragment extends Fragment {
         if (uri == null) {
             return;
         }
+        Uri before = Storage.tree(requireContext());
         Storage.saveTree(requireContext(), uri);
+        String raw = Storage.chosenRaw(requireContext());
+        if (raw != null && Storage.chosenDir(requireContext()) == null) {
+            // la ruta existe pero el telefono no deja escribir ahi: se vuelve a la anterior
+            Storage.saveTree(requireContext(), before);
+            refreshDir();
+            Toast.makeText(requireContext(), R.string.ajustes_carpeta_fallo,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         refreshDir();
         Toast.makeText(requireContext(),
                 getString(R.string.carpeta_elegida, Storage.describe(requireContext())),
@@ -279,6 +293,85 @@ public class SettingsFragment extends Fragment {
 
     private void refreshDir() {
         binding.lblDir.setText(Storage.describe(requireContext()));
+    }
+
+    // ---------------------------------------------------------------- calidad
+
+    /** Primero se elige el modo (video o audio) y despues la resolucion, de la mas baja a la mas alta. */
+    private void pickQuality() {
+        final Context context = requireContext();
+        String[] rows = new String[]{
+                getString(R.string.ajustes_calidad_fila, getString(R.string.hist_video),
+                        Quality.savedLabel(context)),
+                getString(R.string.ajustes_calidad_fila, getString(R.string.fmt_solo_audio),
+                        Quality.savedAudioLabel(context))};
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.ajustes_calidad_titulo)
+                .setItems(rows, (dialog, which) -> {
+                    if (which == 0) {
+                        pickVideoQuality();
+                    } else {
+                        pickAudioQuality();
+                    }
+                })
+                .show();
+    }
+
+    private void pickVideoQuality() {
+        final Context context = requireContext();
+        List<String> specs = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        for (int height : Quality.HEIGHTS) {
+            specs.add(Quality.spec(height));
+            labels.add(getString(R.string.fmt_altura, height));
+        }
+        specs.add(Quality.BEST);
+        labels.add(getString(R.string.q_mejor));
+        choose(R.string.ajustes_calidad_video_titulo, R.string.ajustes_calidad_video_nota,
+                specs, labels, specs.indexOf(Quality.saved(context)), true);
+    }
+
+    private void pickAudioQuality() {
+        final Context context = requireContext();
+        List<String> specs = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        for (int height : Quality.HEIGHTS) {
+            specs.add(Quality.audioSpec(height));
+            labels.add(getString(R.string.fmt_altura, height));
+        }
+        specs.add(Quality.AUDIO);
+        labels.add(getString(R.string.ajustes_calidad_audio_auto));
+        choose(R.string.ajustes_calidad_audio_titulo, R.string.ajustes_calidad_audio_nota,
+                specs, labels, specs.indexOf(Quality.savedAudio(context)), false);
+    }
+
+    private void choose(int titleRes, int noteRes, final List<String> specs,
+                        List<String> labels, int checked, final boolean forVideo) {
+        Context context = requireContext();
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(titleRes)
+                .setMessage(noteRes)
+                .setSingleChoiceItems(labels.toArray(new String[0]), Math.max(checked, -1),
+                        (dialog, which) -> {
+                            Context ctx = requireContext();
+                            String spec = specs.get(which);
+                            String label = labels.get(which);
+                            if (forVideo) {
+                                Quality.save(ctx, spec, label);
+                            } else {
+                                Quality.saveAudio(ctx, spec, label);
+                            }
+                            paintQuality();
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(R.string.clipboard_descartar, null)
+                .show();
+    }
+
+    private void paintQuality() {
+        Context context = requireContext();
+        binding.lblQuality.setText(getString(R.string.ajustes_calidad_valor,
+                Quality.savedLabel(context), Quality.savedAudioLabel(context)));
     }
 
     @Override
