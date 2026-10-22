@@ -1,13 +1,17 @@
 package com.fork.ytdl;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fork.ytdl.databinding.ItemQueueBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +80,44 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
 
             b.itemAction.setOnClickListener(v -> act());
             b.itemCancel.setOnClickListener(v -> DownloadService.cancel(context, task));
+            b.getRoot().setOnLongClickListener(v -> {
+                showError(context);
+                return true;
+            });
+        }
+
+        /** Detalle tecnico del fallo, para copiar o pegar en un foro. */
+        private void showError(Context context) {
+            if (!Task.ERROR.equals(task.state)) {
+                String log = Logs.forTask(task);
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(R.string.err_detalle_titulo)
+                        .setMessage(log.isEmpty() ? context.getString(R.string.sin_log) : log)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+                return;
+            }
+            StringBuilder text = new StringBuilder(Errors.message(context, task));
+            if (task.errorDetail != null && !task.errorDetail.isEmpty()) {
+                text.append("\n\n").append(context.getString(R.string.err_detalle))
+                        .append(": ").append(task.errorDetail);
+            }
+            if (task.attempts > 0) {
+                text.append("\n").append(context.getString(R.string.err_intentos,
+                        task.attempts));
+            }
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle(R.string.err_detalle_titulo)
+                    .setMessage(text.toString())
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setNeutralButton(R.string.btn_copiar_detalle, (dialog, which) -> {
+                        ClipboardManager clipboard = (ClipboardManager)
+                                context.getSystemService(Context.CLIPBOARD_SERVICE);
+                        clipboard.setPrimaryClip(
+                                ClipData.newPlainText("ytdl", text.toString()));
+                        Toast.makeText(context, R.string.log_copiado, Toast.LENGTH_SHORT).show();
+                    })
+                    .show();
         }
 
         private void act() {

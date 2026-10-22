@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glifo del launcher: flecha de descarga sobre bandeja, dentro del area segura (66dp) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M54,24 L54,52"
+        android:strokeColor="@color/brand_on"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M37,38 L54,57 L71,38"
+        android:strokeColor="@color/brand_on"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M33,72 L75,72"
+        android:strokeColor="@color/brand_on"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+</vector>

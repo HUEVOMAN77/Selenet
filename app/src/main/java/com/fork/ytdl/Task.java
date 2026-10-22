@@ -49,6 +49,8 @@ public class Task {
         this.path = json.optString("path", null);
         this.tmp = json.optString("tmp", null);
         this.attempts = json.optInt("attempts", 0);
+        this.errorKind = json.optString("errorKind", null);
+        this.errorDetail = json.optString("errorDetail", null);
         this.bytes = json.optLong("bytes", 0);
         this.finishedAt = json.optLong("finishedAt", 0);
     }
@@ -62,6 +64,8 @@ public class Task {
             if (label != null) json.put("label", label);
             if (path != null) json.put("path", path);
             if (tmp != null) json.put("tmp", tmp);
+            if (errorKind != null) json.put("errorKind", errorKind);
+            if (errorDetail != null) json.put("errorDetail", errorDetail);
             if (finishedAt > 0) json.put("finishedAt", finishedAt);
         } catch (Exception ignored) {
         }

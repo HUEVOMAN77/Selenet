@@ -77,6 +77,11 @@
     <string name="err_formato">No encontré un formato que se pueda bajar sin merge.</string>
     <string name="err_generico">Fallo: %1$s</string>
     <string name="err_reintentos">Se agotaron los 3 reintentos.</string>
+    <string name="err_detalle_titulo">Qué pasó</string>
+    <string name="err_detalle">Detalle técnico</string>
+    <string name="err_intentos">Reintentos: %1$d</string>
+    <string name="sin_log">Todavía no hay log de esta descarga.</string>
+    <string name="btn_copiar_detalle">Copiar detalle</string>
 
     <string name="fmt_titulo">Elegí calidad</string>
     <string name="fmt_requiere_pc">Requiere PC</string>
