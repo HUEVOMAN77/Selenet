@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Rutas que la app puede compartir con Abrir/Compartir. Antes solo estaba la carpeta privada
-  de la app, asi que ningun video de Movies/YTDL Fork ni de la carpeta elegida se podia abrir.
+  de la app, asi que ningun video de Movies/Selenet ni de la carpeta elegida se podia abrir.
 -->
 <paths>
-    <!-- almacenamiento publico: Movies/YTDL Fork, Download y la carpeta que se elija -->
+    <!-- almacenamiento publico: Movies/Selenet, Download y la carpeta que se elija -->
     <external-path name="almacen" path="." />
     <!-- tarjeta de memoria y otros volumenes (/storage/XXXX-XXXX/...) -->
     <root-path name="volumenes" path="/storage" />

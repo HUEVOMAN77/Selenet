@@ -4,7 +4,7 @@
     <!-- INTERNET: el motor descarga desde los sitios. WAKE_LOCK: evita que el CPU duerma
          mientras baja un video. FOREGROUND_SERVICE: muestra la notificacion persistente y
          deja que la cola siga andando con la app cerrada. WRITE_EXTERNAL_STORAGE: con
-         targetSdk 28 es lo unico que permite guardar los videos en Movies/YTDL Fork para
+         targetSdk 28 es lo unico que permite guardar los videos en Movies/Selenet para
          que los vea la galeria; si elegis una carpeta por SAF no se usa. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />

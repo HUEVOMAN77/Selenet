@@ -16,7 +16,8 @@ import java.util.List;
 /**
  * Lo que ya esta bajado, sin importar quien lo bajo.
  * Junta la base de la app (que tiene el link y por eso la miniatura de YouTube) con los
- * archivos que hay en la carpeta elegida, en Movies/YTDL Fork y en la carpeta interna.
+ * archivos que hay en la carpeta elegida, en Movies/Selenet (y en Movies/YTDL Fork,
+ * que es la de las versiones anteriores), y en la carpeta interna de la app.
  * Se llama siempre desde un hilo de fondo: recorrer carpetas cuesta.
  */
 public final class Library {

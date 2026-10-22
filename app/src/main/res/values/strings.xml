@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">YTDL Fork</string>
+    <string name="app_name">Selenet</string>
 
     <string name="tab_descargas">Descargas</string>
     <string name="tab_historial">Historial</string>

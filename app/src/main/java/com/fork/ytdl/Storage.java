@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Destino de los videos: la carpeta elegida por SAF (si la hay) o Movies/YTDL Fork.
+ * Destino de los videos: la carpeta elegida por SAF (si la hay) o Movies/Selenet.
  * Las rutas que arrancan con content:// son documentos SAF; el resto son archivos reales.
  */
 public final class Storage {
@@ -33,7 +33,10 @@ public final class Storage {
     private static final String KEY_TREE = "carpeta";
     private static final String KEY_DIR = "carpeta_real";
     private static final String KEY_LOG = "log_visible";
-    private static final String ALBUM = "YTDL Fork";
+    private static final String ALBUM = "Selenet";
+    /** La carpeta pública de las versiones previas al cambio de nombre: no se borra,
+     * solo se sigue leyendo para que el Historial no pierda lo que ya estaba ahí. */
+    private static final String ALBUM_VIEJO = "YTDL Fork";
 
     private Storage() {
     }
@@ -140,6 +143,13 @@ public final class Storage {
         return writable(dir) ? dir : null;
     }
 
+    /** La carpeta Movies/YTDL Fork de las versiones anteriores; null si ya no existe. */
+    public static File legacySharedDir() {
+        File dir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MOVIES), ALBUM_VIEJO);
+        return dir.isDirectory() ? dir : null;
+    }
+
     /** Donde escribe el motor: siempre una ruta real. */
     public static File engineDir(Context context) {
         File chosen = chosenDir(context);
@@ -165,7 +175,7 @@ public final class Storage {
         return dir;
     }
 
-    /** Las carpetas que se recorren al armar el historial: la elegida, la publica y la de la app. */
+    /** Las carpetas que se recorren al armar el historial: la elegida, las públicas y la de la app. */
     public static List<File> searchDirs(Context context) {
         List<File> dirs = new ArrayList<>();
         File chosen = chosenDir(context);
@@ -174,7 +184,7 @@ public final class Storage {
         }
         File shared = sharedDir();
         File app = new File(context.getExternalFilesDir(null), "downloads");
-        for (File candidate : new File[]{shared, app}) {
+        for (File candidate : new File[]{shared, legacySharedDir(), app}) {
             if (candidate != null && candidate.isDirectory() && !dirs.contains(candidate)) {
                 dirs.add(candidate);
             }
