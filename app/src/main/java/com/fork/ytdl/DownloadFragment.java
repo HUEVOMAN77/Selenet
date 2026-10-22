@@ -256,7 +256,10 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         boolean empty = adapter.getItemCount() == 0;
         binding.queueEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
         binding.logText.setText(Logs.global());
-        binding.logScroll.post(() -> binding.logScroll.fullScroll(View.FOCUS_DOWN));
+        // se guarda la vista, no el binding: el post corre despues y el binding ya puede
+        // estar borrado si la pestaña cambio mientras tanto
+        android.widget.ScrollView scroll = binding.logScroll;
+        scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
     }
 
     private static final java.util.regex.Pattern HTTP =

@@ -508,26 +508,50 @@ public class DownloadService extends Service {
                 new Intent(action).setPackage(getPackageName()), flags());
 
         Task active = null;
+        Task ended = null;
+        boolean live = false;
         for (Task task : snapshot()) {
             if (Task.RUNNING.equals(task.state)) {
                 active = task;
             }
+            if (task.isLive()) {
+                live = true;
+            }
+            if (Task.DONE.equals(task.state) || Task.ERROR.equals(task.state)) {
+                ended = task;
+            }
+        }
+        String title;
+        String text;
+        if (active != null) {
+            title = getString(R.string.notif_titulo);
+            text = active.displayName() + " · " + active.percent + "% · " + active.speed
+                    + (active.eta.isEmpty() ? "" : " · " + active.eta);
+        } else if (ended != null) {
+            // la cola ya se vacio: el aviso dice como termino, y se puede cerrar
+            boolean fallo = Task.ERROR.equals(ended.state);
+            title = getString(fallo ? R.string.notif_titulo_error : R.string.notif_titulo_listo);
+            text = fallo ? Errors.reason(this, ended.errorKind, ended.errorDetail)
+                    : Storage.nameOf(ended.path);
+        } else {
+            title = getString(R.string.notif_dejo);
+            text = getString(R.string.notif_tap);
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL)
                 .setSmallIcon(android.R.drawable.stat_sys_download)
-                .setOngoing(true)
-                .setContentTitle(active == null ? getString(R.string.notif_dejo)
-                        : getString(R.string.notif_titulo))
-                .setContentText(active == null ? getString(R.string.notif_tap)
-                        : active.displayName() + " · " + active.percent + "% · " + active.speed
-                        + (active.eta.isEmpty() ? "" : " · " + active.eta))
+                // con la cola vacia el aviso tiene que poder cerrarse
+                .setOngoing(live)
+                .setContentTitle(title)
+                .setContentText(text)
                 .setNumber(active == null ? 0 : active.percent)
-                .addAction(android.R.drawable.ic_media_pause, label, control)
+                .addAction(pauseAll ? android.R.drawable.ic_media_play
+                        : android.R.drawable.ic_media_pause, label, control)
                 .setContentIntent(content);
         if (active != null && active.percent > 0) {
             builder.setProgress(100, active.percent, false);
         } else {
-            builder.setProgress(0, 0, true);
+            // sin descarga en curso no tiene que quedar el spinner dando vueltas
+            builder.setProgress(0, 0, false);
         }
         return builder.build();
     }
@@ -538,9 +562,21 @@ public class DownloadService extends Service {
     }
 
     private void updateNotification() {
-        NotificationManager manager =
-                (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(NOTIF_ID, buildNotification());
+        // finishUp() llama a stopSelf() y deja colgado un notifyUi() en la cola del main;
+        // aca getApplicationContext() ya puede ser null y el post revienta la app.
+        Context context = app == null ? getApplicationContext() : app;
+        if (context == null) {
+            return;
+        }
+        try {
+            NotificationManager manager = (NotificationManager)
+                    context.getSystemService(NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.notify(NOTIF_ID, buildNotification());
+            }
+        } catch (Exception e) {
+            Logs.append(null, "error notificacion: " + e);
+        }
     }
 
     // ---------------------------------------------------------------- persistencia

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:overScrollMode="never"
@@ -290,6 +291,88 @@
                     android:layout_marginTop="@dimen/space_m"
                     android:text="@string/ajustes_registro_sub"
                     android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- FALLO DETECTADO -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/crash_card"
+            style="@style/Widget.Ytdl.Card.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_gap"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Ytdl.Badge"
+                        android:layout_width="@dimen/badge_size_sm"
+                        android:layout_height="@dimen/badge_size_sm"
+                        app:cardBackgroundColor="@color/state_error_bg">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_sm"
+                            android:layout_height="@dimen/icon_size_sm"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_state_error"
+                            app:tint="@color/state_error_fg" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_m"
+                        android:layout_weight="1"
+                        android:text="@string/ajustes_fallo"
+                        android:textAppearance="@style/Text.Ytdl.ItemTitle" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/crash_detail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:ellipsize="end"
+                    android:maxLines="3"
+                    android:textAppearance="@style/Text.Ytdl.ItemMeta"
+                    tools:text="java.lang.NullPointerException" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_crash_copy"
+                        style="@style/Widget.Ytdl.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
+                        android:text="@string/btn_fallo_copiar" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_crash_clear"
+                        style="@style/Widget.Ytdl.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_s"
+                        android:minHeight="40dp"
+                        android:text="@string/btn_fallo_borrar" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

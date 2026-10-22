@@ -86,7 +86,44 @@ public class SettingsFragment extends Fragment {
         binding.switchLog.setChecked(Storage.logVisible(requireContext()));
         binding.switchLog.setOnCheckedChangeListener((button, on) ->
                 Storage.setLogVisible(requireContext(), on));
+        binding.btnCrashCopy.setOnClickListener(v -> copyCrash());
+        binding.btnCrashClear.setOnClickListener(v -> {
+            Crash.clear(requireContext());
+            paintCrash();
+            Toast.makeText(requireContext(), R.string.fallo_borrado, Toast.LENGTH_SHORT).show();
+        });
+        paintCrash();
         refreshEngine();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // si la app se cerro mal mientras esta pantalla no estaba abierta, ahi se ve
+        paintCrash();
+    }
+
+    /** La tarjeta de fallos solo aparece cuando hay un stack guardado. */
+    private void paintCrash() {
+        if (binding == null) {
+            return;
+        }
+        boolean hay = Crash.exists(requireContext());
+        binding.crashCard.setVisibility(hay ? View.VISIBLE : View.GONE);
+        if (hay) {
+            binding.crashDetail.setText(Crash.read(requireContext()));
+        }
+    }
+
+    private void copyCrash() {
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard == null) {
+            return;
+        }
+        clipboard.setPrimaryClip(android.content.ClipData.newPlainText(
+                "ytdl-fallo", Crash.read(requireContext())));
+        Toast.makeText(requireContext(), R.string.fallo_copiado, Toast.LENGTH_SHORT).show();
     }
 
     // ------------------------------------------------------------------ motor
