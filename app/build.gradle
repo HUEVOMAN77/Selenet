@@ -11,16 +11,35 @@ if (localPropsFile.exists()) {
 def buildPythonPath = localProps.getProperty('buildPython', 'python')
 def ytdlWheel = localProps.getProperty('ytdlWheel', './libs/youtube_dl-2025.4.7-py2.py3-none-any.whl')
 
+// La firma de release vive afuera del repositorio; local.properties esta gitignoreado.
+// Sin esas cuatro lineas el build sigue usando la clave de debug, que no sirve para actualizar.
+def ksPath = localProps.getProperty('keystoreFile', '')
+def ksStore = localProps.getProperty('keystoreStorePassword', '')
+def ksAlias = localProps.getProperty('keystoreAlias', '')
+def ksKey = localProps.getProperty('keystoreKeyPassword', '')
+def signed = !([ksPath, ksStore, ksAlias, ksKey].contains(''))
+
 android {
     namespace 'com.fork.ytdl'
     compileSdk 35
+
+    signingConfigs {
+        fork {
+            if (signed) {
+                storeFile file(ksPath)
+                storePassword ksStore
+                keyAlias ksAlias
+                keyPassword ksKey
+            }
+        }
+    }
 
     defaultConfig {
         applicationId "com.fork.ytdl"
         minSdk 24
         targetSdk 28
-        versionCode 7
-        versionName "2025.04.07-fork.7"
+        versionCode 8
+        versionName "2025.04.07-fork.8"
         ndk { abiFilters "arm64-v8a" }
     }
 
@@ -28,7 +47,7 @@ android {
         debug { applicationIdSuffix "" }
         release {
             minifyEnabled false
-            signingConfig signingConfigs.debug
+            signingConfig signed ? signingConfigs.fork : signingConfigs.debug
         }
     }
 
