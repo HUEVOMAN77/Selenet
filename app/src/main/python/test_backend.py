@@ -165,7 +165,7 @@ class TestClientFallback(unittest.TestCase):
         backend.youtube_dl = self.real
         shutil.rmtree(self.dir, True)
 
-    def run_blocked(self, task_id, blocked, fmt='best', message=None):
+    def run_blocked(self, task_id, blocked, fmt='best', message=None, prefix=None):
         """Activa el motor de mentira y descarga con los clientes marcados como 403."""
         spy = _YoutubeDLSpy(blocked, self.outfile, message)
 
@@ -181,7 +181,7 @@ class TestClientFallback(unittest.TestCase):
         backend.youtube_dl = holder
         self.spy = spy
         sink = _Sink()
-        return backend.run(task_id, 'https://youtu.be/x', self.dir, fmt, sink), sink
+        return backend.run(task_id, 'https://youtu.be/x', self.dir, fmt, sink, prefix), sink
 
     def test_reintenta_con_el_cliente_siguiente(self):
         ok, sink = self.run_blocked('t1', [backend.CLIENTS[0]], 'bestaudio')
@@ -214,6 +214,14 @@ class TestClientFallback(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(self.spy.seen, [backend.CLIENTS[0]])
         self.assertEqual(sink.events[-1], ('error', 'network'))
+
+    def test_prefijo_unico_para_el_mp4_temporal(self):
+        self.run_blocked('t9', [], prefix='audio-t9')
+        self.assertEqual(os.path.basename(self.spy.last['outtmpl']), 'audio-t9.%(ext)s')
+
+    def test_sin_prefijo_sigue_usando_el_titulo(self):
+        self.run_blocked('t10', [])
+        self.assertEqual(os.path.basename(self.spy.last['outtmpl']), '%(title)s.%(ext)s')
 
 
 class TestEngineGuard(unittest.TestCase):

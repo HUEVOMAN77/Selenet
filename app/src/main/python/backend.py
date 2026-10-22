@@ -164,10 +164,16 @@ def _eta(seconds):
     return '%d:%02d' % (minutes, sec)
 
 
-def run(task_id, url, outdir, fmt, sink):
-    """Descarga un item. Bloqueante: lo llama el hilo del servicio."""
+def run(task_id, url, outdir, fmt, sink, prefix=None):
+    """Descarga un item. Bloqueante: lo llama el hilo del servicio.
+
+    `prefix` fija el nombre del archivo (para el MP4 temporal del modo audio, que tiene que
+    ser unico y no puede pisar un titulo). Sin `prefix` se mantiene el comportamiento de
+    siempre: el titulo del video como nombre.
+    """
     register(task_id)
     state = {'final': None, 'partial': None, 'percent': -1}
+    stem = prefix if prefix else '%(title)s'
 
     def hook(d):
         if _stop_action(task_id):
@@ -191,7 +197,7 @@ def run(task_id, url, outdir, fmt, sink):
 
     options = {
         'format': fmt or 'best',
-        'outtmpl': os.path.join(outdir, '%(title)s.%(ext)s'),
+        'outtmpl': os.path.join(outdir, stem + '.%(ext)s'),
         'noplaylist': True,
         'quiet': True,
         'no_warnings': False,

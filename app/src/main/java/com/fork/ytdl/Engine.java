@@ -62,10 +62,20 @@ public final class Engine {
 
     public static boolean runResult(String taskId, String url, File outDir, String fmt,
                                     Object sink) {
+        return runResult(taskId, url, outDir, fmt, sink, null);
+    }
+
+    /**
+     * Descarga una URL. `prefix`, cuando existe, fija el nombre del archivo de salida
+     * en lugar del titulo; lo usa el modo audio para escribir el MP4 temporal en cache.
+     */
+    public static boolean runResult(String taskId, String url, File outDir, String fmt,
+                                    Object sink, String prefix) {
         if (backend == null) {
             throw new IllegalStateException("motor sin iniciar");
         }
-        return backend.callAttr("run", taskId, url, outDir.getAbsolutePath(), fmt, sink)
+        // null en Java llega a Python como None, que es el valor por defecto de prefix.
+        return backend.callAttr("run", taskId, url, outDir.getAbsolutePath(), fmt, sink, prefix)
                 .toBoolean();
     }
 
