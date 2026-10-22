@@ -117,8 +117,8 @@ nuevos ni rescritura al API de SAF.
 
 ```sh
 # 1. Aplicar el parche del cliente al fork del motor y generar el wheel
-cd ../youtube-dl && git apply ../ydl-android/app/patches/youtube-player-clients.patch
-python -m pip wheel . --no-deps --no-build-isolation -w ../ydl-android/app/libs
+cd ../youtube-dl && git apply ../Selenet/app/patches/youtube-player-clients.patch
+python -m pip wheel . --no-deps --no-build-isolation -w ../Selenet/app/libs
 
 # 2. Escribir local.properties (no se committea) con tu SDK, Python y wheel
 #    sdk.dir=/ruta/Android/Sdk
@@ -157,8 +157,10 @@ la procedencia de cada parte:
   extraer links y formatos es de ese proyecto. Publicado como *Unlicense* (dominio público).
 - **[HUEVOMAN77/youtube-dl](https://github.com/HUEVOMAN77/youtube-dl)** — fork del motor, sobre
   el commit `956b8c5855` (versión `2025.04.07`), con el parche de clientes de YouTube.
-- **[ydl-android](https://github.com/HUEVOMAN77/ydl-android)** — la base de esta app, escrita por
-  **HUEVOMAN77**. Selenet es la continuidad oficial de ese proyecto.
+- **ydl-android** — el nombre original de este mismo repositorio
+  ([HUEVOMAN77/Selenet](https://github.com/HUEVOMAN77/Selenet)), creado por **HUEVOMAN77**.
+  Las versiones de prueba quedaron etiquetadas como `v6` a `v11`; Selenet 1.0 es la continuidad
+  oficial de ese proyecto.
 - **[Chaquopy](https://chaquo.com/chaquopy/)** (Apache 2.0) — mete Python dentro del APK.
 - **[Android Jetpack / AndroidX](https://developer.android.com/jetpack)** y
   **[Material Components for Android](https://github.com/material-components/material-components-android)**

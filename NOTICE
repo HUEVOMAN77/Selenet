@@ -8,7 +8,7 @@ de este repositorio cubre unicamente el codigo de la app.
 |---|---|---|
 | Motor de descarga (youtube-dl 2025.04.07) | ytdl-org/youtube-dl (ric920609 y contribuidores) | Unlicense (dominio publico) |
 | Fork del motor con el parche de clientes de YouTube | HUEVOMAN77/youtube-dl | Unlicense (dominio publico) |
-| Base de la app (ydl-android) | HUEVOMAN77 | Unlicense (dominio publico) |
+| Base de la app (ydl-android, hoy HUEVOMAN77/Selenet) | HUEVOMAN77 | Unlicense (dominio publico) |
 | Chaquopy, CPython 3.12 y librerias de Python empaquetadas | chaquo.com | Apache-2.0 / PSF |
 | AndroidX y Jetpack | Google | Apache-2.0 |
 | Material Components for Android y Material Icons | Google | Apache-2.0 |
