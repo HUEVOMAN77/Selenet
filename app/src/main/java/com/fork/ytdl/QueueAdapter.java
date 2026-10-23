@@ -195,9 +195,14 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             return context.getString(R.string.estado_completada);
         }
         if (Task.RUNNING.equals(task.state)) {
-            String stage = Task.STAGE_EXTRACT.equals(task.stage)
-                    ? context.getString(R.string.estado_extrayendo)
-                    : context.getString(R.string.estado_descargando);
+            String stage;
+            if (Task.STAGE_EXTRACT.equals(task.stage)) {
+                stage = context.getString(R.string.estado_extrayendo);
+            } else if (Task.STAGE_MERGE.equals(task.stage)) {
+                stage = context.getString(R.string.estado_uniendo);
+            } else {
+                stage = context.getString(R.string.estado_descargando);
+            }
             return stage + " " + task.percent + "%";
         }
         if (Task.PAUSED.equals(task.state)) {

@@ -18,6 +18,7 @@ public class Task {
 
     public static final String STAGE_DOWNLOAD = "download";
     public static final String STAGE_EXTRACT = "extract";
+    public static final String STAGE_MERGE = "merge";
 
     public final String id;
     public final String url;
@@ -42,6 +43,12 @@ public class Task {
     /** MP4 temporal que quedo disponible cuando la extraccion fallo. */
     public String fallback;
 
+    /**
+     * Pista de audio que hay que juntar con `fmt` cuando ese formato es video suelto.
+     * Con esto la app baja las dos pistas y las une con MediaMuxer, sin ffmpeg.
+     */
+    public String audioFmt;
+
     public Task(String url, String fmt) {
         this.id = UUID.randomUUID().toString();
         this.url = url;
@@ -63,6 +70,7 @@ public class Task {
         this.bytes = json.optLong("bytes", 0);
         this.finishedAt = json.optLong("finishedAt", 0);
         this.fallback = json.optString("fallback", null);
+        this.audioFmt = json.optString("audioFmt", null);
     }
 
     public JSONObject toJson() {
@@ -78,6 +86,7 @@ public class Task {
             if (errorDetail != null) json.put("errorDetail", errorDetail);
             if (finishedAt > 0) json.put("finishedAt", finishedAt);
             if (fallback != null) json.put("fallback", fallback);
+            if (audioFmt != null) json.put("audioFmt", audioFmt);
         } catch (Exception ignored) {
         }
         return json;

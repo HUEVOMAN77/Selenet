@@ -27,10 +27,11 @@ public final class Quality {
     public static final String SMALL = "worst";
 
     /**
-     * Alturas que se pueden elegir en Ajustes, de la mas baja a la mas alta.
-     * 1080p es el techo real: arriba de eso YouTube entrega video y audio por separado
-     * y aca no hay con que juntarlos, porque la app no lleva ffmpeg. Esos formatos se listan
-     * marcados como "Requiere PC" y no se descargan.
+     * Alturas que se pueden elegir en Ajustes, de la mas baja a la mas alta. Son presets de
+     * un solo selector de youtube-dl, y un selector suelto no baja dos pistas para juntarlas:
+     * arriba de 1080p YouTube manda el video y el audio por separado. Esas calidades siguen
+     * al alcance en el selector de cada video, que baja las dos pistas y las une en el
+     * telefono con MediaMuxer (Merger); el preset de Ajustes se queda en 1080p.
      */
     public static final int[] HEIGHTS = {144, 240, 360, 480, 720, 1080};
 

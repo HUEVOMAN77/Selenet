@@ -21,18 +21,30 @@ public final class Formats {
         public final int height;
         public final int fps;
         public final long size;
+        /**
+         * Formato de la pista de audio con la que hay que juntar este video suelto; vacio
+         * cuando el video ya trae audio o cuando no hay con que juntarlo en el telefono.
+         */
+        public final String audio;
 
-        Option(String id, String kind, String ext, int height, int fps, long size) {
+        Option(String id, String kind, String ext, int height, int fps, long size,
+               String audio) {
             this.id = id;
             this.kind = kind;
             this.ext = ext;
             this.height = height;
             this.fps = height == 0 ? 0 : fps;
             this.size = size;
+            this.audio = audio == null ? "" : audio;
         }
 
         public boolean needsMerge() {
             return "merge".equals(kind);
+        }
+
+        /** Video suelto que la app puede juntar con su pista de audio, sin ffmpeg. */
+        public boolean mergeable() {
+            return needsMerge() && !audio.isEmpty();
         }
 
         public boolean isAudio() {
@@ -51,11 +63,14 @@ public final class Formats {
             return context.getString(R.string.fmt_normal, ext);
         }
 
-        /** Texto de una linea con el tamanho aproximado y el aviso de merge. */
+        /** Texto de una linea con el tamanho aproximado y como se consigue esa calidad. */
         public String label(Context context) {
             String text = shortLabel(context) + " · "
                     + (size > 0 ? Formatter.formatShortFileSize(context, size)
                     : context.getString(R.string.fmt_sin_medida));
+            if (mergeable()) {
+                return text + " · " + context.getString(R.string.fmt_se_junta);
+            }
             return needsMerge()
                     ? text + " · " + context.getString(R.string.fmt_requiere_pc) : text;
         }
@@ -114,14 +129,15 @@ public final class Formats {
                     }
                     options.add(new Option(row.optString("id"), row.optString("kind"),
                             row.optString("ext"), row.optInt("height"), row.optInt("fps"),
-                            row.optLong("size")));
+                            row.optLong("size"), row.optString("audio", "")));
                 }
             }
             if (options.isEmpty()) {
                 return Result.fail("format");
             }
             // el motor devuelve lo mejor primero; la pantalla se muestra al reves,
-            // de la resolucion mas baja a la mas alta, y lo de PC y audio queda al final
+            // de la resolucion mas baja a la mas alta, y lo que pide PC y el audio suelto
+            // quedan al final
             Collections.sort(options, new Comparator<Option>() {
                 @Override
                 public int compare(Option a, Option b) {
@@ -130,7 +146,11 @@ public final class Formats {
                 }
 
                 private int group(Option option) {
-                    return option.isAudio() ? 2 : (option.needsMerge() ? 1 : 0);
+                    if (option.isAudio()) {
+                        return 2;
+                    }
+                    // la que se junta en el telefono cuenta como opcion normal
+                    return option.needsMerge() && !option.mergeable() ? 1 : 0;
                 }
             });
             return new Result(true, null, root.optString("title", ""),

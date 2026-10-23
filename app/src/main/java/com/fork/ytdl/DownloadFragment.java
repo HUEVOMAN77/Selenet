@@ -257,7 +257,8 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         for (int i = 0; i < labels.length; i++) {
             Formats.Option option = result.options.get(i);
             boolean remembered = option.id.equals(saved)
-                    || (savedHeight > 0 && option.height == savedHeight && !option.needsMerge());
+                    || (savedHeight > 0 && option.height == savedHeight
+                    && (!option.needsMerge() || option.mergeable()));
             labels[i] = option.label(context) + (remembered ? "  ✓" : "");
         }
         new MaterialAlertDialogBuilder(context)
@@ -399,17 +400,18 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
 
     private void choose(String url, Formats.Option option) {
         Context context = requireContext();
-        if (option.needsMerge()) {
+        if (option.needsMerge() && !option.mergeable()) {
             Toast.makeText(context, R.string.fmt_requiere_pc_detalle, Toast.LENGTH_LONG).show();
             return;
         }
+        String audio = option.mergeable() ? option.audio : null;
         if (option.size > 0) {
             // el tamano lo dio el extractor: se puede avisar antes de gastar la bajada
-            confirmSpace(option.size, () -> enqueue(url, option.id,
+            confirmSpace(option.size, () -> enqueue(url, option.id, audio,
                     option.shortLabel(context)));
             return;
         }
-        enqueue(url, option.id, option.shortLabel(context));
+        enqueue(url, option.id, audio, option.shortLabel(context));
     }
 
     /**
@@ -437,6 +439,10 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     }
 
     private void enqueue(String url, String fmt, String label) {
+        enqueue(url, fmt, null, label);
+    }
+
+    private void enqueue(String url, String fmt, String audioFmt, String label) {
         Context context = requireContext();
         // se recuerda la eleccion como "calidad de Ajustes", pero solo si es una preset:
         // un id de formato suelto de este video no tiene por que cambiar la proxima descarga
@@ -445,7 +451,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         } else if (Quality.heightOf(fmt) > 0 || Quality.BEST.equals(fmt)) {
             Quality.save(context, fmt, label);
         }
-        DownloadService.enqueue(context, url, fmt, label);
+        DownloadService.enqueue(context, url, fmt, audioFmt, label);
         binding.urlInput.setText("");
         Toast.makeText(context, R.string.agregada, Toast.LENGTH_SHORT).show();
         scrollToNew();

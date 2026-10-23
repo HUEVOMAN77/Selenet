@@ -39,6 +39,10 @@ public final class Errors {
                 return context.getString(R.string.err_sin_clientes);
             case "no_audio":
                 return context.getString(R.string.err_sin_audio);
+            case "no_video":
+                return context.getString(R.string.err_sin_video);
+            case "merge":
+                return context.getString(R.string.err_union);
             case "audio_vacio":
                 return context.getString(R.string.err_audio_vacio);
             case "extraccion":

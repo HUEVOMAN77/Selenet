@@ -307,11 +307,55 @@ def _best_audio(items):
     return ordered
 
 
-_MERGE_HEIGHTS = (1080, 720, 480)
+_MERGE_HEIGHTS = (2160, 1440, 1080, 720, 480)
+
+# Codecs de video que Android escribe en un MP4 sin recodificar. VP9 y AV1 quedan afuera:
+# MediaMuxer no los mete en MP4 y recodificarlos en el telefono gasta bateria y tiempo.
+_MERGE_VIDEO = ('avc1', 'hev1', 'hvc1', 'mp4v')
+_MERGE_AUDIO = ('mp4a', 'aac')
+
+
+def _codec_family(text):
+    """'avc1.640028' -> 'avc1'; vacio si el extractor no informo el codec."""
+    return (text or '').split('.')[0]
+
+
+def _merge_pair(items):
+    """La pista de audio que se puede juntar en el telefono, o None si no hay."""
+    for item in _best_audio(items):
+        if item['ext'] == 'm4a' and _codec_family(item['acodec']) in _MERGE_AUDIO:
+            return item
+    return None
+
+
+def _mergeable(item):
+    """Video suelto que entra en un MP4 junto al audio: MP4 con codec soportado."""
+    return (item['kind'] == 'merge' and item['ext'] == 'mp4'
+            and _codec_family(item['vcodec']) in _MERGE_VIDEO)
+
+
+def _pair_up(rows, items):
+    """
+    Marca en cada opcion de video suelto con que audio hay que juntarla, para que la app
+    baje las dos pistas y las una sin ffmpeg. Las que no se pueden juntar (VP9, Opus, webm)
+    quedan sin marca y se siguen mostrando como "Requiere PC".
+    """
+    audio = _merge_pair(items)
+    if audio is None:
+        return rows
+    for row in rows:
+        if not _mergeable(row):
+            continue
+        row['audio'] = audio['id']
+        row['audio_size'] = audio['size']
+        if row['size'] > 0 and audio['size'] > 0:
+            # lo que ocupa en el telefono es la suma de las dos pistas
+            row['size'] += audio['size']
+    return rows
 
 
 def pick(items):
-    """Primero lo que se baja en un archivo; despues las alturas que piden PC."""
+    """Primero lo que se baja en un archivo; despues las alturas de video suelto."""
     single = _best_by_height(items, 'video')
     split = _best_by_height(items, 'merge')
     rows = sorted(single.values(), key=lambda item: item['height'], reverse=True)
@@ -339,7 +383,8 @@ _AUDIO_EXTS = ('mp3', 'm4a', 'aac', 'ogg', 'opus', 'wav', 'flac', 'weba')
 
 
 def _kind_of(raw):
-    """'video' y 'audio' se bajan en un archivo; 'merge' necesita ffmpeg."""
+    """'video' y 'audio' se bajan en un archivo; 'merge' es video suelto, sin pista de
+    audio: la app lo junta con un m4a usando las APIs de Android, sin ffmpeg."""
     vcodec = raw.get('vcodec')
     acodec = raw.get('acodec')
     ext = (raw.get('ext') or '').lower()
@@ -374,6 +419,10 @@ def _item(raw, index=0):
         'fps': _to_int(raw.get('fps')),
         'br': _to_int(raw.get('tbr') or raw.get('vbr')),
         'size': _to_int(raw.get('filesize') or raw.get('filesize_approx')),
+        # los codecs deciden si las dos pistas se pueden juntar en el telefono con
+        # MediaMuxer: hace falta video en MP4 y audio en m4a, ni VP9 ni Opus.
+        'vcodec': (raw.get('vcodec') or '').lower(),
+        'acodec': (raw.get('acodec') or '').lower(),
     }
 
 
@@ -385,7 +434,8 @@ def _flatten(info):
 
 
 def formats(url):
-    """JSON con los formatos que se pueden bajar en un solo archivo, sin ffmpeg."""
+    """JSON con las calidades de un video: las que vienen en un solo archivo y las que
+    necesitan juntar dos pistas, que la app une con MediaMuxer sin ffmpeg."""
     options = {
         'quiet': True,
         'noplaylist': True,
@@ -421,7 +471,7 @@ def formats(url):
     if not items:
         items = _flatten(info)
 
-    chosen = pick(items)
+    chosen = _pair_up(pick(items), items)
     # la hoja previa muestra lo que el extractor ya sabe del video: canal, vistas, fecha y
     # cuanto pesa aproximadamente lo que se va a bajar. Vienen en la misma respuesta del
     # extractor, asi que solo hay que leerlos.
@@ -439,14 +489,16 @@ def formats(url):
 
 
 def _size_of(rows):
-    """Bytes aproximados de la mejor opcion con tamano conocido; 0 si el sitio no lo informa."""
+    """
+    Bytes aproximados de la mejor opcion con tamano conocido; 0 si el sitio no los informa.
+    Se toma la mas grande y no la primera: la hoja del video dice cuanto puede llegar a
+    ocupar, que es lo que sirve antes de elegir calidad y antes del aviso por espacio.
+    """
+    best = 0
     for row in rows:
-        if row['kind'] != 'audio' and row['size'] > 0:
-            return row['size']
-    for row in rows:
-        if row['size'] > 0:
-            return row['size']
-    return 0
+        if row['kind'] != 'audio' and row['size'] > best:
+            best = row['size']
+    return best
 
 
 # ------------------------------------------------------------- busqueda

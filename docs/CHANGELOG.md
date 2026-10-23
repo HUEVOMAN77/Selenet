@@ -28,6 +28,70 @@ se instala encima sin desinstalar.
 
 ---
 
+## [1.3] — 2026-10-23 · etiqueta `v1.3-pistas.1` · **en prueba**
+
+### Added
+
+- **Unión de pistas en el dispositivo, sin `ffmpeg`.** Las calidades que el sitio manda en dos
+  pistas (video suelto sin audio + audio `.m4a`) se bajan las dos a la caché privada y se juntan
+  con `MediaExtractor`/`MediaMuxer` en un solo MP4: es el camino de 1080p y de las alturas
+  mayores cuando existen en MP4. No decodifica ni recodifica, así que conserva el video y el
+  audio exactos que entregó el sitio.
+- `Merger.java` (mezclador), `Task.audioFmt`, dos tramos nuevos de la barra de progreso y la
+  etiqueta de estado **Uniendo pistas**. El motor ahora marca con `audio` la pista con la que
+  juntar cada opción de video suelto, y suma el tamaño de las dos para el aviso de espacio.
+- Tipos de error nuevos: `merge` y `no_video`, con su texto en español.
+
+### Changed
+
+- *Fuera del alcance en la 1.0*: las opciones de video suelto con códecs que Android escribe en
+  MP4 ya no se marcan como *Requiere PC*; se descargan y se unen. Siguen marcadas las que
+  vienen en VP9/AV1 con audio Opus, que no tienen lugar en un MP4.
+- La hoja del video informa el tamaño de la opción más grande y no la primera de la lista, que
+  es lo que sirve antes de elegir calidad.
+
+### Verificación
+
+- Compilación `debug` y `release` firmada. Probado con un extractor falso: las filas `avc1`+`m4a`
+  quedan emparejadas y suman su tamaño; las `vp9`/`opus` no.
+- **No probado en un teléfono.** El mezclador depende de que `MediaExtractor` lea el contenedor
+  que entregó el sitio (los MP4 fragmentados requieren Android 9 o superior) y de que
+  `MediaMuxer` acepte los tiempos tal como vienen; eso solo se confirma instalando.
+
+---
+
+## [1.2] — 2026-10-23 · etiqueta `v1.2-buscar.1`
+
+### Added
+
+- **Buscador dentro de la app.** Botón *Buscar video* en Descargas: una sola petición de
+  `ytsearchN:` con `extract_flat` devuelve 15 resultados con duración, canal y tamaño
+  aproximado. Toque = elegir calidad; pulsación larga = agregar con la calidad guardada.
+- **Ficha previa del video** antes de encolar: canal, vistas, fecha, duración y tamaño, leídos
+  del mismo pedido de formatos.
+- **Abrir en Selenet.** Filtro `VIEW` en `MainActivity`, limitado a los dominios donde
+  descargar tiene sentido, para traer un link desde otro navegador sin copiarlo.
+- **Control de espacio.** Aviso cuando lo elegido no entra con 80 MB de margen (con opción de
+  bajar igual) y tarea marcada como error cuando el volumen está por debajo de 60 MB, en vez
+  de una descarga que se corta a mitad.
+
+---
+
+## [1.1] — 2026-10-23 · etiqueta `1.1-intro.1`
+
+### Added
+
+- Intro animada de 4 segundos (`IntroActivity`, lanzador de la app) y guía de primer uso
+  (`OnboardingActivity`) con salto, progreso y paginación.
+- Mejoras de interfaz: estado vivo de la cola, badge en la pestaña Descargas y filtro del
+  historial.
+- Funciones: bajar solo por WiFi, reintentos con multi-enlace por tarea, listas de
+  reproducción con confirmación y aviso individual por descarga terminada (con canal
+  aparte y permiso `POST_NOTIFICATIONS` pedido en tiempo de ejecución).
+- Número de compilación visible en Ajustes, para distinguir un APK de otro al probar.
+
+---
+
 ## [1.0] — 2026-10-22 · etiqueta `v1.0` · **primera versión oficial y estable**
 
 ### Added

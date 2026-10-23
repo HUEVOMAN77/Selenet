@@ -114,7 +114,7 @@ de errores.
 
 | Elemento | Situación real | Motivo |
 |---|---|---|
-| **Formats DASH por encima de 1080p** | Se listan y se marcan como *Requiere PC*; al seleccionarlos la app lo advierte y no inicia la descarga | Juntar pista separada de video y pista de audio exige un mezclador; en el dispositivo no hay `ffmpeg` |
+| **DASH de video y audio separados** | Se descargan y se unen en el dispositivo (1080p y las alturas mayores cuando vienen en MP4); se marcan como *Requiere PC* solo las de VP9/AV1 con audio Opus | La unión la hace `MediaExtractor`/`MediaMuxer` con pistas AVC/HEVC + AAC; VP9 y AV1 no tienen lugar en un MP4 |
 | **Modo híbrido con la PC** | **No implementado.** El único rastro es un interruptor **deshabilitado** en Ajustes → Avanzado, que no tiene código asociado | Marcador de posición de una función planificada (ver [hoja de ruta](#18-hoja-de-ruta)); no debe presentarse como disponible |
 | Listas de reproducción | No soportado (`noplaylist: true` en el motor) | Mantener una descarga por tarea, cola previsible |
 | Descarga concurrente | No: un único hilo de trabajo | Evita saturar el enlace y simplifica la reanudación |
@@ -166,7 +166,7 @@ La barra de progreso es honesta en el modo audio: durante la extracción muestra
 | **Solo MP4** | Usa la calidad de video guardada en Ajustes; si allí hubiera una calidad de audio, cae a *Mejor (automático)* para no devolver nunca un archivo sin video |
 | **Solo audio** | Usa la calidad de audio guardada en Ajustes y ejecuta el pipeline de extracción `.m4a` |
 
-### 4.4 Modo solo audio sin `ffmpeg`
+### 4.4 Sin `ffmpeg`: extracción de audio y unión de pistas
 
 1. El motor baja el MP4 progresivo elegido a la caché privada `cache/audio` del dispositivo.
 2. `MediaExtractor` selecciona la pista de audio y `MediaMuxer` la escribe como `.m4a` real en
@@ -178,6 +178,22 @@ La barra de progreso es honesta en el modo audio: durante la extracción muestra
 
 El archivo temporal nunca se ve en la carpeta del usuario. La limpieza de la caché respeta las
 tareas activas.
+
+La unión de pistas usa la misma caché y las mismas APIs, pero con los dos archivos que entrega
+el sitio cuando la calidad no viene en un solo contenedor:
+
+1. El motor baja la pista de video suelto (`137`, `313`… sin audio) a `cache/audio`; la barra
+   llega hasta el 60 %.
+2. Después baja la pista de audio `.m4a` emparejada; hasta el 70 %.
+3. `MediaExtractor` lee las muestras de cada pista y `MediaMuxer` las escribe interleadas por
+   marca de tiempo en `destino/nombre.mp4.part`; de ahí al 100 % y se renombra al definitivo.
+4. No se decodifica ni se recodifica nada: el video y el audio son los bytes exactos del sitio.
+
+Si alguna pista no se puede leer o el contenedor no la acepta, la tarea queda con el motivo
+(`merge` o `no_video`) y se borran los dos temporales. Las opciones que el teléfono no puede
+unir (VP9/AV1 con Opus) siguen listadas como *Requiere PC* y no se inician. La unión depende de
+que el reproductor de Android lea el MP4 que entregó el sitio: los MP4 fragmentados requieren
+Android 9 o superior.
 
 ### 4.5 Historial, destino, motor y diagnóstico
 
@@ -767,7 +783,7 @@ publicada requiere borrar datos.
 | Prioridad | Elemento | Alcance |
 |---|---|---|
 | 1 | **Modo híbrido con la PC** | Convertir el interruptor deshabilitado en una función real: descubrir un equipo en la red local, entregar el enlace y recibir el archivo ya mezclado, para desbloquear 1440p/2160p y cualquier formato DASH. Requiere protocolo, autenticación y documentación de red |
-| 2 | **Mezcla en el dispositivo sin `ffmpeg`** | Evaluar un mezclador propio (fragmentos + `MediaMuxer`) para eliminar la dependencia de la PC |
+| 2 | **Mezcla en el dispositivo sin `ffmpeg`** | **Implementada** para AVC/HEVC + AAC (1080p y más). Queda pendiente confirmar en dispositivos reales y cubrir VP9/AV1, que no entran en un MP4 |
 | 3 | **Migración de `targetSdk`** | Plan de salida de API 28 hacia una diana publicable, con almacenamiento por alcance y tipos de servicio en primer plano actuales; incluye revisar `usesCleartextTraffic` con una configuración de red por dominio |
 | 4 | **CI y calidad** | Pipeline con compilación, pruebas del backend, Lint sin exclusiones y artefactos firmados en cada `tag` |
 | 5 | **Verificación en dispositivo** | Batería mínima de instalaciones reales (Android 8, 11, 13, 15), SD y restauración de copias de seguridad |

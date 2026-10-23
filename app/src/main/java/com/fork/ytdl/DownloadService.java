@@ -43,6 +43,9 @@ public class DownloadService extends Service {
     private static final String PREFS = "cola";
     /** Hasta ahi llega la barra mientras se baja el MP4 temporal del modo audio. */
     private static final int DOWNLOAD_CEILING = 90;
+    /** En la union de pistas: hasta ahi llega el video suelto y de ahi a 70% el audio. */
+    private static final int MERGE_VIDEO_CEILING = 60;
+    private static final int MERGE_AUDIO_CEILING = 70;
     /** Piso de espacio libre para animarse a empezar una descarga (60 MB). */
     private static final long MIN_FREE = 60L * 1024 * 1024;
 
@@ -110,8 +113,18 @@ public class DownloadService extends Service {
     }
 
     public static void enqueue(Context context, String url, String fmt, String label) {
+        enqueue(context, url, fmt, null, label);
+    }
+
+    /**
+     * Agrega una tarea. `audioFmt`, cuando viene, es la pista de audio que hay que bajar y
+     * juntar con `fmt`: es el camino de las calidades que el sitio manda en dos pistas.
+     */
+    public static void enqueue(Context context, String url, String fmt, String audioFmt,
+                               String label) {
         use(context);
         Task task = new Task(url, fmt == null ? "best" : fmt);
+        task.audioFmt = audioFmt;
         task.label = label;
         synchronized (QUEUE) {
             QUEUE.add(task);
@@ -431,11 +444,15 @@ public class DownloadService extends Service {
         Sink sink = new Sink(task);
         boolean ok;
         try {
-            ok = Quality.isAudio(task.fmt)
-                    ? runAudio(task, sink)
-                    : Boolean.TRUE.equals(
-                            Engine.runResult(task.id, task.url, Storage.engineDir(this),
-                                    task.fmt, sink));
+            if (Quality.isAudio(task.fmt)) {
+                ok = runAudio(task, sink);
+            } else if (task.audioFmt != null && !task.audioFmt.isEmpty()) {
+                ok = runMerge(task, sink);
+            } else {
+                ok = Boolean.TRUE.equals(
+                        Engine.runResult(task.id, task.url, Storage.engineDir(this),
+                                task.fmt, sink));
+            }
         } catch (Exception e) {
             ok = false;
             task.errorKind = "error";
@@ -534,6 +551,8 @@ public class DownloadService extends Service {
         private final Task task;
         /** Tope de la barra: 100 lo de siempre, 90 mientras se baja el temporal de audio. */
         private int ceiling = 100;
+        /** Piso de la barra, para las etapas que empiezan despues de otra descarga. */
+        private int floor;
         /** El archivo que dejo el motor; en el modo audio es el MP4 temporal de la caché. */
         private File produced;
 
@@ -552,7 +571,7 @@ public class DownloadService extends Service {
 
         public void onProgress(int percent, String speed, String eta,
                                String filename, String tmpfilename) {
-            task.percent = percent * ceiling / 100;
+            task.percent = floor + percent * (ceiling - floor) / 100;
             task.speed = speed == null ? "" : speed;
             task.eta = eta == null ? "" : eta;
             // en el modo audio el archivo vive en la caché: todavia no es la ruta de salida
@@ -935,6 +954,123 @@ public class DownloadService extends Service {
         } finally {
             task.stage = null;
         }
+    }
+
+    /**
+     * 1080p y mas sin ffmpeg: baja el video suelto y el audio por separado a la cache
+     * (0% a 70% de la barra) y despues los junta con MediaMuxer en un solo MP4 (70% a 100%).
+     * Los dos temporales viven en la misma cache que el modo audio, asi que "Limpiar
+     * cortadas" los barre igual que a los demas. El destino del usuario nunca ve el par
+     * suelto: o sale el MP4 junto, o la tarea queda con el motivo.
+     */
+    private boolean runMerge(Task task, Sink sink) {
+        File video = pullTrack(task, sink, task.fmt, "video-" + task.id, 0,
+                MERGE_VIDEO_CEILING);
+        if (video == null) {
+            return false;
+        }
+        File audio = pullTrack(task, sink, task.audioFmt, "audio-" + task.id,
+                MERGE_VIDEO_CEILING, MERGE_AUDIO_CEILING);
+        if (audio == null) {
+            if (!STOPS.containsKey(task.id)) {
+                deleteQuietly(video);   // sin corte de por medio el temporal ya no sirve
+            }
+            return false;
+        }
+
+        task.stage = Task.STAGE_MERGE;
+        task.percent = MERGE_AUDIO_CEILING;
+        task.speed = "";
+        task.eta = "";
+        notifyUi();
+        String base = Storage.safeBase(task.title == null ? video.getName() : task.title);
+        File output = Storage.unique(Storage.engineDir(this), base, "mp4");
+        // se escribe con .part al lado: si la union falla el resto se barre como cortada
+        File target = new File(output.getAbsolutePath() + ".part");
+        task.tmp = target.getAbsolutePath();
+        try {
+            String codecs = Merger.merge(video, audio, target, new Merger.Watch() {
+                @Override
+                public void onStage(int percent) {
+                    task.percent = Math.min(99, MERGE_AUDIO_CEILING
+                            + percent * (100 - MERGE_AUDIO_CEILING) / 100);
+                    notifyUi();
+                }
+
+                @Override
+                public boolean cancelled() {
+                    return STOPS.containsKey(task.id);
+                }
+            });
+            long size = target.length();
+            if (size <= 0) {
+                deleteQuietly(target);
+                task.errorKind = "merge";
+                task.errorDetail = "el mp4 junto salio de 0 bytes";
+                Logs.append(task, "union sin muestras");
+                return false;
+            }
+            if (!target.renameTo(output)) {
+                deleteQuietly(target);
+                task.errorKind = "sin_destino";
+                task.errorDetail = "no se pudo dejar " + output.getName() + " en el destino";
+                Logs.append(task, "sin destino para el mp4 junto");
+                return false;
+            }
+            task.path = output.getAbsolutePath();
+            task.bytes = size;
+            task.tmp = null;
+            deleteQuietly(video);
+            deleteQuietly(audio);
+            Logs.append(task, "pistas unidas (" + codecs + ") en " + output.getName());
+            return true;
+        } catch (Merger.Failure failure) {
+            deleteQuietly(target);
+            deleteQuietly(video);
+            deleteQuietly(audio);
+            task.errorKind = failure.kind;
+            task.errorDetail = failure.getMessage();
+            task.tmp = null;
+            Logs.append(task, "union (" + failure.kind + "): " + failure.getMessage());
+            return false;
+        } finally {
+            task.stage = null;
+        }
+    }
+
+    /**
+     * Baja una pista a la cache marcando su tramo de la barra. Devuelve el archivo que dejo
+     * el motor, o null si fallo, se corto o no quedo archivo visible; en esos casos el motor
+     * o el propio helper ya pisaron errorKind/errorDetail.
+     */
+    private File pullTrack(Task task, Sink sink, String fmt, String prefix, int floor,
+                           int ceiling) {
+        sink.floor = floor;
+        sink.ceiling = ceiling;
+        sink.produced = null;
+        task.stage = Task.STAGE_DOWNLOAD;
+        notifyUi();
+        boolean down;
+        try {
+            down = Boolean.TRUE.equals(Engine.runResult(task.id, task.url,
+                    Storage.audioCache(this), fmt, sink, prefix));
+        } catch (Exception e) {
+            task.errorKind = "error";
+            task.errorDetail = String.valueOf(e.getMessage());
+            Logs.append(task, "excepcion bajando " + prefix + ": " + e);
+            return null;
+        }
+        if (!down || STOPS.containsKey(task.id)) {
+            return null;   // el motor ya piso kind/detail, o pidieron cortar
+        }
+        File file = sink.produced;
+        if (file == null || !file.isFile() || file.length() <= 0) {
+            task.errorKind = "sin_destino";
+            task.errorDetail = "la pista " + prefix + " no quedo en la carpeta temporal";
+            Logs.append(task, "temporal de pista ausente o vacio");
+            return null;
+        }
+        return file;
     }
 
     private static void deleteQuietly(File file) {

@@ -139,7 +139,7 @@
 
     <string name="fmt_titulo">Elegí calidad</string>
     <string name="fmt_requiere_pc">Requiere PC</string>
-    <string name="fmt_requiere_pc_detalle">Esa calidad viene sin audio: hay que juntarla con ffmpeg en la PC.</string>
+    <string name="fmt_requiere_pc_detalle">Esa calidad viene en un formato que el teléfono no puede juntar (video VP9 o audio Opus): hace falta ffmpeg en la PC.</string>
     <string name="fmt_solo_audio">Solo audio</string>
     <string name="fmt_obteniendo">Leyendo formatos…</string>
     <string name="fmt_fallo">No pude leer los formatos: %1$s</string>
@@ -293,4 +293,10 @@
     <string name="espacio_mensaje">El video pesa alrededor de %1$s y tenés %2$s libres en el almacenamiento. Si la bajada se queda a mitad queda un corte inservible.\n\nPodés liberar espacio antes, o bajar una calidad más chica desde el selector.</string>
     <string name="espacio_igual">Bajar igual</string>
     <string name="err_espacio_full">No hay espacio libre en el teléfono (%1$s). Borrá algo o elegí una calidad más chica y reintentá.</string>
+
+    <!-- UNION DE PISTAS (1080p y mas, sin ffmpeg) -->
+    <string name="fmt_se_junta">se junta en el teléfono</string>
+    <string name="estado_uniendo">Uniendo pistas…</string>
+    <string name="err_union">No se pudieron juntar el video y el audio en el teléfono. Suele pasar cuando el sitio manda el video en un formato que Android no escribe en MP4. Probá con una calidad más baja, que suele venir en un solo archivo.</string>
+    <string name="err_sin_video">El archivo de video no tenía ninguna pista de video. Reintentá la bajada o elegí otra calidad.</string>
 </resources>
