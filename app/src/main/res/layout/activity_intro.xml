@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Intro animado de Selenet. Las vistas estan sueltas a proposito: cada beat del storyboard
+  anima propiedades concretas (alpha, translationY, scaleX) desde IntroActivity, y la marca
+  usa el drawable animado. El root es clickable para poder saltar el intro con un toque.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/intro_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/scrim">
+
+    <!-- El degradado real de la app entra al final, sobre el negro. -->
+    <View
+        android:id="@+id/intro_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="@drawable/bg_app" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingEnd="@dimen/screen_padding">
+
+        <FrameLayout
+            android:id="@+id/intro_mark_box"
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+            <ImageView
+                android:id="@+id/intro_mark"
+                android:layout_width="184dp"
+                android:layout_height="184dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/intro_marca"
+                android:scaleType="fitCenter"
+                android:src="@drawable/intro_mark" />
+
+            <ImageView
+                android:id="@+id/intro_falling"
+                android:layout_width="42dp"
+                android:layout_height="54dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/intro_arrow" />
+        </FrameLayout>
+
+        <!-- "SELENET" letra por letra, agregado por codigo para no hardcodear el texto -->
+        <LinearLayout
+            android:id="@+id/intro_wordmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <View
+            android:id="@+id/intro_accent"
+            android:layout_width="150dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="@dimen/space_s"
+            android:alpha="0"
+            android:background="@drawable/intro_accent_line"
+            android:scaleX="0" />
+
+        <TextView
+            android:id="@+id/intro_tagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:alpha="0"
+            android:gravity="center"
+            android:text="@string/intro_tagline"
+            android:textAppearance="@style/Text.Ytdl.IntroTagline" />
+
+        <!-- Los 3 tabs aparecen arriba de la silueta de la barra: la promesa visual del nav -->
+        <FrameLayout
+            android:id="@+id/intro_bar_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:paddingStart="22dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="22dp"
+            android:paddingBottom="10dp">
+
+            <View
+                android:id="@+id/intro_nav_ghost"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0"
+                android:background="@drawable/intro_nav_ghost"
+                android:scaleX="0.6" />
+
+            <LinearLayout
+                android:id="@+id/intro_trio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/intro_tab_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alpha="0"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/space_l"
+                    android:paddingEnd="@dimen/space_l">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Ytdl.Badge"
+                        android:layout_width="@dimen/badge_size"
+                        android:layout_height="@dimen/badge_size">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size"
+                            android:layout_height="@dimen/icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_download"
+                            app:tint="@color/primary" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/tab_descargas"
+                        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/intro_tab_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alpha="0"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/space_l"
+                    android:paddingEnd="@dimen/space_l">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Ytdl.Badge"
+                        android:layout_width="@dimen/badge_size"
+                        android:layout_height="@dimen/badge_size">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size"
+                            android:layout_height="@dimen/icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_history"
+                            app:tint="@color/primary" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/tab_historial"
+                        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/intro_tab_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alpha="0"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/space_l"
+                    android:paddingEnd="@dimen/space_l">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Ytdl.Badge"
+                        android:layout_width="@dimen/badge_size"
+                        android:layout_height="@dimen/badge_size">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size"
+                            android:layout_height="@dimen/icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_settings"
+                            app:tint="@color/primary" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/tab_ajustes"
+                        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/intro_skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="28dp"
+        android:alpha="0"
+        android:text="@string/intro_saltar"
+        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+</FrameLayout>

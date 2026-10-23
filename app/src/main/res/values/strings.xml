@@ -92,9 +92,15 @@
     <string name="btn_fallo_borrar">Borrar</string>
     <string name="fallo_copiado">Detalle del fallo copiado</string>
     <string name="fallo_borrado">Detalle del fallo borrado</string>
-    <string name="ajustes_hibrido">Descargar en la PC por red</string>
-    <string name="ajustes_hibrido_off">Activá el modo híbrido desde la PC para habilitar esto.</string>
-    <string name="modo_hibrido">Modo híbrido: el link lo procesa tu PC</string>
+    <string name="ajustes_intro">Animación de apertura</string>
+    <string name="ajustes_intro_sub">Cuánto se ve el intro al abrir. Completo dura 4 segundos y Corto unos 2,5; cuando la app todavía estaba abierta en segundo plano se acorta sola, para no hacer esperar.</string>
+    <string name="intro_modo_actual">Elegido: %1$s</string>
+    <string name="intro_modo_titulo">Animación de apertura</string>
+    <string name="intro_modo_off">Sin intro</string>
+    <string name="intro_modo_corto">Corto</string>
+    <string name="intro_modo_completo">Completo</string>
+    <string name="ajustes_tutorial">Ver la guía otra vez</string>
+    <string name="ajustes_tutorial_sub">Vuelve a abrir el repaso de 4 pasos, incluida la carpeta de destino.</string>
 
     <string name="notif_canal">Descargas</string>
     <string name="notif_titulo">Descargando</string>
@@ -167,4 +173,65 @@
     <string name="sin_app">No hay app para abrir ese archivo.</string>
     <string name="permiso_saf">Sin permiso no puedo guardar ahí.</string>
     <string name="sin_carpeta">Elegí primero una carpeta en Ajustes.</string>
+
+    <!-- ============ INTRO ============ -->
+    <string name="intro_marca">Marca de Selenet</string>
+    <string name="intro_tagline">Pegá un link, elegí calidad,\ny se baja en el teléfono.</string>
+    <string name="intro_saltar">Tocá cualquier parte para saltar</string>
+
+    <!-- ============ GUIA DE INICIO ============ -->
+    <string name="onb_atras">Atrás</string>
+    <string name="onb_siguiente">Seguir</string>
+    <string name="onb_saltear">Saltar guía</string>
+    <string name="onb_empezar">Empezar a bajar</string>
+    <string name="onb_ir_carpeta">Elegir carpeta ahora</string>
+    <string name="onb_carpeta_luego">De momento uso la de la app</string>
+    <string name="onb_paso">Paso %1$d de 4</string>
+    <string name="onb_demo_hint">Así se ve una descarga real en la cola:</string>
+    <string name="onb_demo_archivo">video-ejemplo.mp4</string>
+    <string name="onb_dir_por_defecto">Por ahora: %1$s</string>
+    <string name="pct_corto">%1$d%%</string>
+
+    <string name="onb1_titulo">Todo pasa en el teléfono</string>
+    <string name="onb1_texto">Copiás la dirección del video en cualquier app, la pegás en Selenet y la descarga arranca en la cola. No hace falta una PC ni un servidor en el medio.</string>
+    <string name="onb1_uno">Pegá el link</string>
+    <string name="onb1_dos">Elegí la calidad</string>
+    <string name="onb1_tres">Mirá la cola</string>
+
+    <string name="onb2_titulo">Las tres calidades</string>
+    <string name="onb2_texto">Auto trae lo mejor que se puede bajar junto, video y audio en el mismo archivo. MP4 es la más compatible con otras apps. Solo audio deja nada más que el sonido, en un archivo chico.</string>
+    <string name="onb2_auto_t">Auto</string>
+    <string name="onb2_auto_s">La mejor que salga en un solo archivo. Si te rinde, pisa esto desde Ajustes.</string>
+    <string name="onb2_mp4_t">MP4</string>
+    <string name="onb2_mp4_s">Video y audio juntos, el formato que abre todo.</string>
+    <string name="onb2_audio_t">Solo audio</string>
+    <string name="onb2_audio_s">Extrae el sonido del mismo video. Cuanto más alta la resolución, mejor suena y más gasta.</string>
+
+    <string name="onb3_titulo">Dónde se guardan</string>
+    <string name="onb3_texto">Si elegís una carpeta, las descargas caen ahí y las ve tu gestor de archivos. Si no, quedan en la carpeta privada de la app. Podés cambiar cuando quieras desde Ajustes.</string>
+    <string name="onb3_interna">Carpeta de la app</string>
+    <string name="onb3_interna_s">Funciona sin pedir nada, pero solo la ve Selenet.</string>
+    <string name="onb3_propia">Tu carpeta</string>
+    <string name="onb3_propia_s">La elegís vos y la abren todas las apps. Un paso y listo.</string>
+
+    <string name="onb4_titulo">Cuando algo falla</string>
+    <string name="onb4_texto">Cada error dice por qué pasó y tiene un botón para reintentar. El historial guarda lo terminado con el tamaño, y de ahí podés abrirlo, compartirlo o volver a descargarlo.</string>
+    <string name="onb4_uno">3 reintentos solos si es la conexión</string>
+    <string name="onb4_dos">Un aviso claro si YouTube corta el pedido</string>
+    <string name="onb4_tres">Actualizá el motor desde Ajustes si se repite</string>
+
+    <!-- ============ COACH MARKS ============ -->
+    <string name="coach_url_t">1. Acá va el link</string>
+    <string name="coach_url_s">Pegá la dirección y Selenet reconoce el video. Cuando detecta un link en el portapapeles te lo ofrece solo.</string>
+    <string name="coach_fmt_t">2. Elegí calidad</string>
+    <string name="coach_fmt_s">Estos tres botones fuerzan el formato de esta descarga; si no tocás ninguno usa la calidad de Ajustes.</string>
+    <string name="coach_add_t">3. Agregar a la cola</string>
+    <string name="coach_add_s">Con esto arranca. Podés salir de la app y la descarga sigue abajo, con su aviso arriba.</string>
+    <string name="coach_next">Siguiente</string>
+    <string name="coach_listo">Listo</string>
+    <string name="coach_saltear">Saltar</string>
+
+    <!-- ============ ESTADOS VACIOS ============ -->
+    <string name="cola_vacia_pista">Pegá un link arriba y tocá Agregar a la cola.</string>
+    <string name="hist_vacio_pista">Lo que termines aparece acá, con el tamaño y botones para abrirlo o compartirlo.</string>
 </resources>

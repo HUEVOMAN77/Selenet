@@ -438,30 +438,61 @@
                         android:textAppearance="@style/Text.Ytdl.ItemTitle" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/lbl_hybrid"
+                <!-- Intro: sin intro / corto / completo. Se elige en un dialog, como la calidad. -->
+                <LinearLayout
+                    android:id="@+id/card_intro"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_m"
-                    android:text="@string/ajustes_hibrido"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical"
+                    android:paddingTop="@dimen/space_s"
+                    android:paddingBottom="@dimen/space_s">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ajustes_intro"
+                        android:textAppearance="@style/Text.Ytdl.ItemBody" />
+
+                    <TextView
+                        android:id="@+id/lbl_intro_state"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:text="@string/ajustes_intro_sub"
+                        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:text="@string/ajustes_tutorial"
                     android:textAppearance="@style/Text.Ytdl.ItemBody" />
 
                 <TextView
-                    android:id="@+id/lbl_hybrid_state"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/ajustes_hibrido_off"
+                    android:text="@string/ajustes_tutorial_sub"
                     android:textAppearance="@style/Text.Ytdl.ItemMeta" />
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switch_hybrid"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_tutorial"
+                    style="@style/Widget.Ytdl.Button.Tonal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_s"
-                    android:enabled="false"
-                    android:text="@string/modo_hibrido"
-                    android:textAppearance="@style/Text.Ytdl.ItemBody" />
+                    android:layout_marginTop="@dimen/space_m"
+                    android:text="@string/ajustes_tutorial" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

@@ -221,6 +221,14 @@
             android:gravity="center"
             android:text="@string/cola_vacia"
             android:textAppearance="@style/Text.Ytdl.Empty" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:gravity="center"
+            android:text="@string/cola_vacia_pista"
+            android:textAppearance="@style/Text.Ytdl.ItemMeta" />
     </LinearLayout>
 
     <!-- Actividad del motor: oculta salvo que se habilite en Ajustes -->

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Paso 1 de la guia: que hace la app, con una tarjeta de cola simulada para que se vea
+  el gesto antes de tener nada descargado. La barra y el estado los mueve OnboardingActivity.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_l"
+    android:paddingBottom="@dimen/space_l">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/onb1_titulo"
+        android:textAppearance="@style/Text.Ytdl.OnbTitle" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:text="@string/onb1_texto"
+        android:textAppearance="@style/Text.Ytdl.OnbBody" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xl"
+        android:text="@string/onb_demo_hint"
+        android:textAppearance="@style/Text.Ytdl.SectionTitle" />
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Ytdl.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Ytdl.Badge"
+                    android:layout_width="@dimen/badge_size_sm"
+                    android:layout_height="@dimen/badge_size_sm">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_sm"
+                        android:layout_height="@dimen/icon_size_sm"
+                        android:layout_gravity="center"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_download"
+                        app:tint="@color/primary" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/onb_demo_archivo"
+                    android:textAppearance="@style/Text.Ytdl.ItemTitle" />
+
+                <TextView
+                    android:id="@+id/onb_demo_pct"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+            </LinearLayout>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/onb_demo_progress"
+                style="@style/Widget.Ytdl.Progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m" />
+
+            <TextView
+                android:id="@+id/onb_demo_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:text="@string/estado_en_espera"
+                android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xl"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/onb_number"
+                android:gravity="center"
+                android:text="1"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle"
+                android:textColor="@color/on_primary_container" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:text="@string/onb1_uno"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/onb_number"
+                android:gravity="center"
+                android:text="2"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle"
+                android:textColor="@color/on_primary_container" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:text="@string/onb1_dos"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/onb_number"
+                android:gravity="center"
+                android:text="3"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle"
+                android:textColor="@color/on_primary_container" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_m"
+                android:text="@string/onb1_tres"
+                android:textAppearance="@style/Text.Ytdl.OnbStepTitle" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

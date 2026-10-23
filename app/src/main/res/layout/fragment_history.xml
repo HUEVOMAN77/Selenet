@@ -62,6 +62,14 @@
                 android:gravity="center"
                 android:text="@string/historial_vacio"
                 android:textAppearance="@style/Text.Ytdl.Empty" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center"
+                android:text="@string/hist_vacio_pista"
+                android:textAppearance="@style/Text.Ytdl.ItemMeta" />
         </LinearLayout>
     </FrameLayout>
 </LinearLayout>

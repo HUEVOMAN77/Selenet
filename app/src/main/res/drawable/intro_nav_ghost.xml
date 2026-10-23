@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silueta de la barra de navegacion que aparece en la beat 4, donde aterrizan los 3 tabs. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="22dp" />
+    <solid android:color="@color/nav_bar" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/glass_stroke" />
+</shape>

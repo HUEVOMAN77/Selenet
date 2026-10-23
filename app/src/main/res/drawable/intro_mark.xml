@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Marca de Selenet para el intro, en dos capas animables por separado.
+
+  La geometria es la misma de ic_launcher_monochrome.xml (palo, punta, triangulo de play y
+  bandeja), asi lo que se anima en pantalla es literalmente el mismo dibujo que queda
+  instalado en el launcher; no hay dos versiones que se noten distintas.
+
+  - "outline": los cuatro trazos sin relleno, para la beat de "se esta dibujando solo".
+  - "fill": las mismas cuatro piezas rellenas, que aparecen despues con un rebote.
+
+  Cada trazo va envuelto en su propio group con alpha 0 porque trimPathEnd no se puede
+  poner en el XML: el valor por defecto es 1 (trazo completo), asi que sin el grupo
+  apagado, cualquier trazo cuyo animador todavia no arranco se dibujaria entero un
+  instante. El group apaga el trazo hasta que le toca, y ahi arranca el recorte.
+
+  Los nombres son obligatorios: el animated-vector busca los targets por ahi.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:name="fill"
+        android:alpha="0"
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.9"
+        android:scaleY="0.9">
+        <path
+            android:name="f_stem"
+            android:fillColor="@color/primary"
+            android:pathData="M33,25 h13 v27 h-13 z" />
+        <path
+            android:name="f_head"
+            android:fillColor="@color/primary"
+            android:pathData="M24,49 L55,49 L39.5,75 Z" />
+        <path
+            android:name="f_play"
+            android:fillColor="@color/secondary"
+            android:pathData="M60,31 L86,54 L60,77 Z" />
+        <path
+            android:name="f_tray"
+            android:fillColor="@color/primary"
+            android:pathData="M24,82 h60 a3,3 0 0,1 0,6 h-60 a3,3 0 0,1 0,-6 z" />
+    </group>
+
+    <group android:name="outline">
+        <group
+            android:name="g_stem"
+            android:alpha="0">
+            <path
+                android:name="o_stem"
+                android:fillColor="#00000000"
+                android:pathData="M33,25 h13 v27 h-13 z"
+                android:strokeColor="@color/primary"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="2.4" />
+        </group>
+
+        <group
+            android:name="g_head"
+            android:alpha="0">
+            <path
+                android:name="o_head"
+                android:fillColor="#00000000"
+                android:pathData="M24,49 L55,49 L39.5,75 Z"
+                android:strokeColor="@color/primary"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="2.4" />
+        </group>
+
+        <group
+            android:name="g_play"
+            android:alpha="0">
+            <path
+                android:name="o_play"
+                android:fillColor="#00000000"
+                android:pathData="M60,31 L86,54 L60,77 Z"
+                android:strokeColor="@color/secondary"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="2.4" />
+        </group>
+
+        <group
+            android:name="g_tray"
+            android:alpha="0">
+            <path
+                android:name="o_tray"
+                android:fillColor="#00000000"
+                android:pathData="M24,82 h60 a3,3 0 0,1 0,6 h-60 a3,3 0 0,1 0,-6 z"
+                android:strokeColor="@color/primary"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="2.4" />
+        </group>
+    </group>
+</vector>

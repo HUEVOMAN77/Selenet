@@ -1,6 +1,7 @@
 package com.fork.ytdl;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -96,8 +97,53 @@ public class SettingsFragment extends Fragment {
             paintCrash();
             Toast.makeText(requireContext(), R.string.fallo_borrado, Toast.LENGTH_SHORT).show();
         });
+        paintIntro();
+        binding.cardIntro.setOnClickListener(v -> pickIntro());
+        binding.btnTutorial.setOnClickListener(v -> reopenGuide());
         paintCrash();
         refreshEngine();
+    }
+
+    // ------------------------------------------------------------------ apertura
+
+    private void paintIntro() {
+        binding.lblIntroState.setText(getString(R.string.intro_modo_actual,
+                introName(requireContext(), FirstRun.introMode(requireContext()))));
+    }
+
+    private static String introName(Context context, int mode) {
+        return context.getString(mode == FirstRun.INTRO_SHORT
+                ? R.string.intro_modo_corto
+                : mode == FirstRun.INTRO_OFF
+                ? R.string.intro_modo_off
+                : R.string.intro_modo_completo);
+    }
+
+    private void pickIntro() {
+        Context context = requireContext();
+        String[] names = {
+                introName(context, FirstRun.INTRO_OFF),
+                introName(context, FirstRun.INTRO_SHORT),
+                introName(context, FirstRun.INTRO_FULL),
+        };
+        final Context app = context.getApplicationContext();
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.intro_modo_titulo)
+                .setSingleChoiceItems(names, FirstRun.introMode(context), (dialog, which) -> {
+                    FirstRun.setIntroMode(app, which);
+                    if (binding != null) {
+                        paintIntro();
+                    }
+                    dialog.dismiss();
+                })
+                .setNegativeButton(R.string.clipboard_descartar, null)
+                .show();
+    }
+
+    /** Vuelve a pasar la guia de 4 pasos; el intro en si no se repite aca. */
+    private void reopenGuide() {
+        FirstRun.resetOnboarding(requireContext());
+        startActivity(new Intent(requireContext(), OnboardingActivity.class));
     }
 
     @Override

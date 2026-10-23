@@ -21,15 +21,37 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.YtdlFork">
 
+        <!--
+          IntroActivity es la puerta de entrada: decide entre intro, guia de inicio y la app.
+          No figura en recientes porque se cierra sola en cuanto entrega.
+        -->
+        <activity
+            android:name=".IntroActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:theme="@style/Theme.Ytdl.Intro">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Guia de 4 pasos; solo la abre IntroActivity o el boton de Ajustes. -->
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.YtdlFork" />
+
+        <!--
+          A MainActivity llegan los "Compartir" de otras apps: ahi no tiene sentido
+          mostrar el intro, lo que importa es el link.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

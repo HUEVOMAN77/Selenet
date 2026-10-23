@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle saved) {
         super.onCreate(saved);
+        // A partir de aca el proceso ya estuvo abierto: el intro se achica la proxima vez.
+        FirstRun.markWarm();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

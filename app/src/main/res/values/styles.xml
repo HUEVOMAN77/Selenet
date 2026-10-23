@@ -46,6 +46,49 @@
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
+    <!-- ============ TIPOGRAFIA DE INTRO / GUIA ============ -->
+    <style name="Text.Ytdl.IntroWord" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.22</item>
+    </style>
+
+    <style name="Text.Ytdl.IntroTagline" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <style name="Text.Ytdl.OnbTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">?attr/colorOnBackground</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Ytdl.OnbBody" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:lineSpacingExtra">5dp</item>
+    </style>
+
+    <style name="Text.Ytdl.OnbStepTitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Text.Ytdl.OnbStepBody" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <style name="Text.Ytdl.CoachTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Ytdl.CoachBody" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">#FFEEF6FF</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+    </style>
+
     <!-- ============ TARJETAS ============ -->
     <!-- Vidrio oscuro: deja pasar el degradado de la ventana y flota sobre él. -->
     <style name="Widget.Ytdl.Card" parent="Widget.Material3.CardView.Filled">

@@ -31,6 +31,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     private static final ExecutorService THREADS = Executors.newSingleThreadExecutor();
     private static String asked;
     private boolean reading;
+    private CoachMarks coach;
 
     @Nullable
     @Override
@@ -83,6 +84,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         binding.logCard.setVisibility(
                 Storage.logVisible(requireContext()) ? View.VISIBLE : View.GONE);
         refresh();
+        showCoach();
     }
 
     @Override
@@ -93,8 +95,38 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
 
     @Override
     public void onDestroyView() {
+        if (coach != null) {
+            coach.close();
+            coach = null;
+        }
         binding = null;
         super.onDestroyView();
+    }
+
+    /**
+     * Las visitas solo salen una vez, justo despues de la guia de inicio, y con el layout
+     * ya medido: si no, el hueco del spotlight saldria con ancho 0.
+     */
+    private void showCoach() {
+        if (coach != null || binding == null || !FirstRun.needsCoach(requireContext())) {
+            return;
+        }
+        final Context app = requireContext().getApplicationContext();
+        binding.btnAdd.post(() -> {
+            if (binding == null || !isAdded() || coach != null) {
+                return;
+            }
+            coach = CoachMarks.show(requireActivity(), new CoachMarks.Step[]{
+                    new CoachMarks.Step(binding.urlInput,
+                            R.string.coach_url_t, R.string.coach_url_s),
+                    new CoachMarks.Step(binding.fmtToggleGroup,
+                            R.string.coach_fmt_t, R.string.coach_fmt_s),
+                    new CoachMarks.Step(binding.btnAdd,
+                            R.string.coach_add_t, R.string.coach_add_s)}, () -> {
+                coach = null;
+                FirstRun.coachDone(app);
+            });
+        });
     }
 
     @Override

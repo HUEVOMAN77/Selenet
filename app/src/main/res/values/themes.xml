@@ -76,4 +76,16 @@
         <item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
         <item name="android:activityOpenExitAnimation">@android:anim/fade_out</item>
     </style>
+
+    <!--
+      El intro arranca sobre negro puro para que la primera imagen no muestre el degradado:
+      la animacion es la que lo revela. Sin ventana de animacion del sistema, porque
+      el crossfade lo controla IntroActivity con overridePendingTransition.
+    -->
+    <style name="Theme.Ytdl.Intro" parent="Theme.YtdlFork">
+        <item name="android:windowBackground">@color/scrim</item>
+        <item name="android:statusBarColor">@color/scrim</item>
+        <item name="android:navigationBarColor">@color/scrim</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 </resources>

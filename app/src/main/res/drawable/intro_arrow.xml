@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Flecha suelta que cae sobre la marca en la beat 2 (0,8 s a 1,6 s). Es la misma geometria
+  del palo y la punta de intro_mark.xml, para que el gesto de "bajar" se vea duplicado
+  sin que aparezca un dibujo nuevo.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="52dp"
+    android:viewportWidth="31"
+    android:viewportHeight="50">
+
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M9,0 h13 v27 h-13 z" />
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M0,24 L31,24 L15.5,50 Z" />
+</vector>

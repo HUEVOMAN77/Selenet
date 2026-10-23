@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Guia de inicio: cuatro pasos que se muestran uno a la vez dentro del mismo host, con
+  crossfade. Se inflan los cuatro de una para que el texto este en layouts separados y no
+  en codigo; OnboardingActivity solo cambia visibilidad, texto de botones y los puntitos.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/onb_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingTop="@dimen/space_m"
+    android:paddingEnd="@dimen/screen_padding"
+    android:paddingBottom="@dimen/space_l">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/onb_counter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="@style/Text.Ytdl.SectionTitle"
+            tools:text="PASO 1 DE 4" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/onb_skip"
+            style="@style/Widget.Ytdl.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onb_saltear" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <FrameLayout
+            android:id="@+id/onb_host"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/step_1"
+                layout="@layout/onb_step_1" />
+
+            <include
+                android:id="@+id/step_2"
+                layout="@layout/onb_step_2"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/step_3"
+                layout="@layout/onb_step_3"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/step_4"
+                layout="@layout/onb_step_4"
+                android:visibility="gone" />
+        </FrameLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/onb_dots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/onb_back"
+            style="@style/Widget.Ytdl.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onb_atras" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/onb_next"
+            style="@style/Widget.Ytdl.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onb_siguiente" />
+    </LinearLayout>
+</LinearLayout>
