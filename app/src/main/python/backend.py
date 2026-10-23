@@ -429,6 +429,71 @@ def formats(url):
     })
 
 
+# ------------------------------------------------------------- listas de videos
+
+# Techo de la lista: los canales y las playlists larguisimas llenarian la cola de cientos
+# de tareas y la app dejaria de ser usable. Se avisa en el JSON para que la UI lo diga.
+_PLAYLIST_MAX = 40
+
+
+def playlist(url):
+    """JSON con los links de una lista, sin bajar nada.
+
+    Con `extract_flat` el extractor solo devuelve la ficha de cada miembro (titulo, id,
+    url) en un solo pedido, en lugar de resolver los formatos de cada video: lo que tarda
+    segundos en una lista de 200 pasa a tardar uno.
+    """
+    options = {
+        'quiet': True,
+        'skip_download': True,
+        'extract_flat': True,
+        'socket_timeout': 20,
+        'retries': 0,
+    }
+    try:
+        with youtube_dl.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Abort:
+        return json.dumps({'ok': False, 'kind': 'error', 'error': 'cancelado'})
+    except _error_class() as err:
+        return json.dumps({'ok': False, 'kind': _classify(str(err)), 'error': str(err)})
+    except Exception as err:
+        return json.dumps({'ok': False,
+                           'kind': _classify('%s: %s' % (type(err).__name__, err)),
+                           'error': str(err)})
+
+    if info is None:
+        return json.dumps({'ok': False, 'kind': 'unavailable', 'error': 'respuesta vacia'})
+
+    base = 'https://www.youtube.com/watch?v='
+    entries = []
+    total = 0
+    for raw in (info.get('entries') or []):
+        if not raw:
+            continue
+        total += 1
+        if len(entries) >= _PLAYLIST_MAX:
+            continue
+        link = raw.get('url') or raw.get('webpage_url')
+        if not link and raw.get('id'):
+            link = base + raw['id']
+        if not link:
+            continue
+        entries.append({'title': raw.get('title') or '', 'url': link})
+
+    # un video suelto (o un canal sin lista) no es una lista: la UI sigue lo normal
+    if total < 2:
+        return json.dumps({'ok': False, 'kind': 'unavailable', 'error': 'no es una lista'})
+
+    return json.dumps({
+        'ok': True,
+        'title': info.get('title') or '',
+        'total': total,
+        'max': _PLAYLIST_MAX,
+        'entries': entries,
+    })
+
+
 # ------------------------------------------------------------- actualizar motor
 
 

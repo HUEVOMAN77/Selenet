@@ -3,6 +3,7 @@ package com.fork.ytdl;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -19,9 +20,16 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements DownloadService.Listener {
 
     private static final int ASK_STORAGE = 21;
+    private static final int ASK_NOTIFY = 22;
+
+    /** El aviso de "terminada" trae la ruta del archivo por aqui, no por un intent suelto. */
+    public static final String EXTRA_OPEN = "com.fork.ytdl.ABRIR";
+    public static final String EXTRA_OPEN_TYPE = "com.fork.ytdl.ABRIR_TIPO";
 
     private ActivityMainBinding binding;
     private String pendingUrl;
+    private Uri pendingOpen;
+    private String pendingOpenType;
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -37,10 +45,17 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         });
 
         pendingUrl = shared(getIntent());
+        takeOpen(getIntent());
         if (saved == null) {
             binding.bottomNav.setSelectedItemId(R.id.nav_descargas);
+        } else {
+            // la activity se recreo (giro, proceso muerto): el link de "Compartir" y el
+            // aviso pendiente seguirian en el intent y volverian a entrar solos
+            pendingUrl = null;
+            pendingOpen = null;
         }
         askStorageIfNeeded();
+        askNotifyIfNeeded();
     }
 
     @Override
@@ -48,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         super.onResume();
         DownloadService.addListener(this);
         paintBadge();
+        consumeOpen();
     }
 
     @Override
@@ -90,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        // hay que guardarlo, no abrirlo ya: desde el fondo del sistema solo se puede
+        // arrancar otra interfaz cuando la nuestra acaba de volver a la pantalla
+        takeOpen(intent);
         String url = shared(intent);
         if (url != null) {
             pendingUrl = url;
@@ -102,9 +121,11 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
-        if (requestCode == ASK_STORAGE && results.length > 0
-                && results[0] != PackageManager.PERMISSION_GRANTED) {
+        boolean denied = results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED;
+        if (denied && requestCode == ASK_STORAGE) {
             Toast.makeText(this, R.string.permiso_saf, Toast.LENGTH_LONG).show();
+        } else if (denied && requestCode == ASK_NOTIFY) {
+            Toast.makeText(this, R.string.notif_sin_permiso, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -121,6 +142,38 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         }
         String text = intent.getStringExtra(Intent.EXTRA_TEXT);
         return text == null ? null : DownloadFragment.firstUrl(text);
+    }
+
+    /** Guarda el archivo que trae el aviso, si es que trae alguno. */
+    private void takeOpen(Intent intent) {
+        Uri uri = intent == null ? null : intent.getParcelableExtra(EXTRA_OPEN);
+        if (uri != null) {
+            pendingOpen = uri;
+            pendingOpenType = intent.getStringExtra(EXTRA_OPEN_TYPE);
+        }
+    }
+
+    /**
+     * Abre lo que pidio el aviso. Se hace aca y no en onNewIntent porque Android 10+
+     * bloquea el arranque de interfaces desde el fondo; con la app ya en pantalla
+     * el reproductor entra sin problema.
+     */
+    private void consumeOpen() {
+        Uri uri = pendingOpen;
+        if (uri == null) {
+            return;
+        }
+        pendingOpen = null;
+        String type = pendingOpenType == null ? "*/*" : pendingOpenType;
+        pendingOpenType = null;
+        Intent open = new Intent(Intent.ACTION_VIEW)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .setDataAndType(uri, type);
+        try {
+            startActivity(Intent.createChooser(open, getString(R.string.abrir)));
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.sin_app, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void show(int itemId) {
@@ -148,6 +201,21 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
             List<String> needed = new ArrayList<>();
             needed.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             requestPermissions(needed.toArray(new String[0]), ASK_STORAGE);
+        }
+    }
+
+    /**
+     * Android 13+ no muestra ningun aviso sin este permiso, ni el de la cola. Con targetSdk
+     * 28 el sistema no lo pide solo al instalar, entonces lo pide la app una vez apenas
+     * se abre. Si se niega, las descargas siguen bajando: solo no se ven los avisos.
+     */
+    private void askNotifyIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, ASK_NOTIFY);
         }
     }
 }

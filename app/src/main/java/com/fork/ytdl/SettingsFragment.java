@@ -91,6 +91,12 @@ public class SettingsFragment extends Fragment {
         binding.switchLog.setChecked(Storage.logVisible(requireContext()));
         binding.switchLog.setOnCheckedChangeListener((button, on) ->
                 Storage.setLogVisible(requireContext(), on));
+        binding.switchWifi.setChecked(Net.wifiOnly(requireContext()));
+        binding.switchWifi.setOnCheckedChangeListener((button, on) ->
+                Net.setWifiOnly(requireContext(), on));
+        binding.switchAvisos.setChecked(Net.announce(requireContext()));
+        binding.switchAvisos.setOnCheckedChangeListener((button, on) ->
+                Net.setAnnounce(requireContext(), on));
         binding.btnCrashCopy.setOnClickListener(v -> copyCrash());
         binding.btnCrashClear.setOnClickListener(v -> {
             Crash.clear(requireContext());

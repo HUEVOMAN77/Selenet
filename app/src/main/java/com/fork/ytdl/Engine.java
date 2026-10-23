@@ -87,6 +87,14 @@ public final class Engine {
         return backend.callAttr("formats", url).toString();
     }
 
+    /** JSON con los videos de una lista; tampoco se llama desde la interfaz. */
+    public static String playlist(String url) {
+        if (backend == null) {
+            throw new IllegalStateException("motor sin iniciar");
+        }
+        return backend.callAttr("playlist", url).toString();
+    }
+
     public static void request(String taskId, String action) {
         if (backend == null) {
             return;

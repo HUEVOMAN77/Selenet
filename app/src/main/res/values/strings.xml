@@ -222,7 +222,7 @@
 
     <!-- ============ COACH MARKS ============ -->
     <string name="coach_url_t">1. Acá va el link</string>
-    <string name="coach_url_s">Pegá la dirección y Selenet reconoce el video. Cuando detecta un link en el portapapeles te lo ofrece solo.</string>
+    <string name="coach_url_s">Pegá la dirección y Selenet reconoce el video. Si el texto tiene varios links, o si es una lista de YouTube, te los ofrece todos antes de agregarlos.</string>
     <string name="coach_fmt_t">2. Elegí calidad</string>
     <string name="coach_fmt_s">Estos tres botones fuerzan el formato de esta descarga; si no tocás ninguno usa la calidad de Ajustes.</string>
     <string name="coach_add_t">3. Agregar a la cola</string>
@@ -245,4 +245,31 @@
     <string name="hist_resumen">%1$d archivos · %2$s</string>
     <string name="hist_filtro_vacio">En el historial no hay nada de ese tipo.</string>
     <string name="hist_resumen_filtro">%1$d de %2$d · %3$s</string>
+
+    <!-- ============ DATOS / WiFi ============ -->
+    <string name="ajustes_solo_wifi">Bajar solo con WiFi</string>
+    <string name="ajustes_solo_wifi_sub">Con los datos prendidos la cola queda en espera y arranca sola en cuanto conectás a una red WiFi. Sirve para no gastar la bonificación y para no cortar una bajada grande con señal floja.</string>
+    <string name="notif_esperando_wifi">Esperando WiFi</string>
+    <string name="espera_wifi">cola retenida: la política es bajar solo con WiFi</string>
+    <string name="espera_red">cola retenida: no hay conexión a internet</string>
+    <string name="multilink_titulo">Varios links detectados</string>
+    <string name="multilink_mensaje">El texto tiene %1$d links. ¿Querés agregar todos a la cola?</string>
+    <string name="multilink_todos">Agregar los %1$d</string>
+    <string name="multilink_unico">Solo el primero</string>
+    <string name="multilink_ok">%1$d links agregados</string>
+
+    <!-- AVISOS -->
+    <string name="ajustes_avisos">Avisar al terminar</string>
+    <string name="ajustes_avisos_sub">Cada descarga terminada saca un aviso aparte que abre el archivo con solo tocarlo. Con la opción prendida podés dejar la app cerrada y enterarte cuando terminó algo. Apagala si agregás listas muy largas y no querés un aviso por video.</string>
+    <string name="notif_canal_listo">Descargas terminadas</string>
+    <string name="notif_sin_permiso">Sin permiso de notificaciones no vas a ver los avisos; las descargas igual funcionan.</string>
+
+    <!-- LISTAS DE VIDEOS -->
+    <string name="lista_leyendo">Leyendo la lista…</string>
+    <string name="lista_titulo">Esto es una lista</string>
+    <string name="lista_mensaje">%1$s\n\nTiene %2$d videos. ¿Los agrego todos a la cola con la calidad que elegiste en Ajustes?</string>
+    <string name="lista_mensaje_corta">%1$s\n\nLa lista tiene %2$d videos, pero la cola admite %3$d por descarga: entran los primeros y el resto queda afuera. ¿Los agrego?</string>
+    <string name="lista_todos">Agregar %1$d</string>
+    <string name="lista_unico">Solo este video</string>
+    <string name="lista_agregadas">%1$d videos de la lista agregados</string>
 </resources>

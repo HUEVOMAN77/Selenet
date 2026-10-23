@@ -10,6 +10,13 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- ACCESS_NETWORK_STATE: la politica "bajar solo con WiFi" necesita saber que red
+         esta activa antes de gastar datos en una descarga de 1080p. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- POST_NOTIFICATIONS: en Android 13+ sin esto el aviso de "terminada" no se ve,
+         aunque la notificacion persistente de la cola siga siendo legal. Con targetSdk 28
+         el sistema no la pide solo, asi que MainActivity la pide de una vez. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".App"

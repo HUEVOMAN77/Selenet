@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Cola de descargas; sigue funcionando con la app cerrada gracias al servicio en primer plano. */
 public class DownloadService extends Service {
@@ -31,7 +33,12 @@ public class DownloadService extends Service {
     public static final String ACTION_RESUME = "com.fork.ytdl.RESUME";
 
     private static final String CHANNEL = "descargas";
+    /** Canal aparte, con ruido: el de la cola es silencioso y este tiene que sonar. */
+    private static final String CHANNEL_DONE = "terminadas";
     private static final int NOTIF_ID = 4711;
+    /** Base de los avisos sueltos de "terminada"; cada descarga usa un numero nuevo. */
+    private static final int ANNOUNCE_BASE = 5000;
+    private static final AtomicInteger ANNOUNCE = new AtomicInteger(0);
     private static final long[] BACKOFF = {2000, 5000, 10000};
     private static final String PREFS = "cola";
     /** Hasta ahi llega la barra mientras se baja el MP4 temporal del modo audio. */
@@ -46,6 +53,8 @@ public class DownloadService extends Service {
     private static volatile boolean pauseAll;
 
     private Thread worker;
+    /** La cola esta retenida por la politica de red; lo lee el armado del aviso. */
+    private volatile boolean held;
     private final Listener notifier = new Listener() {
         @Override
         public void onQueueChanged() {
@@ -335,9 +344,38 @@ public class DownloadService extends Service {
                 notifyUi();
                 continue;
             }
+            if (hold(task)) {
+                continue;
+            }
             runTask(task);
         }
         finishUp();
+    }
+
+    /**
+     * Retiene la cola cuando la politica es "bajar solo con WiFi" y el telefono esta con
+     * datos. La tarea NO se marca pausada: queda en espera y arranca sola apenas aparece
+     * la red, que es lo que uno espera de esta opcion. Se avisa una sola vez por corte
+     * (no en cada sondeo) para no llenar el registro, y el aviso permanente cambia a
+     * "Esperando WiFi" para que se vea sin abrir la app.
+     */
+    private boolean hold(Task task) {
+        if (!Net.hold(this)) {
+            if (held) {
+                held = false;
+                Logs.append(null, "red recuperada: la cola sigue sola");
+                updateNotification();
+            }
+            return false;
+        }
+        if (!held) {
+            held = true;
+            Logs.append(task, getString(Net.connected(this)
+                    ? R.string.espera_wifi : R.string.espera_red));
+            updateNotification();
+        }
+        sleep(Net.POLL_MS);
+        return true;
     }
 
     private Task nextPending() {
@@ -399,6 +437,7 @@ public class DownloadService extends Service {
             }
             HistoryDb.get(this).put(task);
             Logs.append(task, "terminada: " + Storage.nameOf(task.path));
+            notifyDone(task);
         } else {
             String kind = task.errorKind == null ? "error" : task.errorKind;
             boolean network = "network".equals(kind);
@@ -522,14 +561,24 @@ public class DownloadService extends Service {
     // ---------------------------------------------------------------- notificacion
 
     private void createChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL, getString(R.string.notif_canal),
-                    NotificationManager.IMPORTANCE_LOW);
-            channel.setShowBadge(false);
-            manager.createNotificationChannel(channel);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
         }
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager == null) {
+            return;
+        }
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL, getString(R.string.notif_canal),
+                NotificationManager.IMPORTANCE_LOW);
+        channel.setShowBadge(false);
+        manager.createNotificationChannel(channel);
+        // el de "terminada" tiene importancia alta: es el unico que puede sonar y aparecer
+        // en la pantalla; si no te enteras mientras la app esta cerrada, no sirve de nada.
+        NotificationChannel done = new NotificationChannel(
+                CHANNEL_DONE, getString(R.string.notif_canal_listo),
+                NotificationManager.IMPORTANCE_HIGH);
+        manager.createNotificationChannel(done);
     }
 
     private Notification buildNotification() {
@@ -562,6 +611,13 @@ public class DownloadService extends Service {
             title = getString(R.string.notif_titulo);
             text = active.displayName() + " · " + active.percent + "% · " + active.speed
                     + (active.eta.isEmpty() ? "" : " · " + active.eta);
+        } else if (held && live) {
+            // la cola no fallo ni se pauso: esta esperando red, y eso tiene que se visible
+            Task waiting = nextPending();
+            title = getString(R.string.notif_esperando_wifi);
+            text = (waiting == null ? "" : waiting.displayName() + " · ")
+                    + getString(Net.connected(this)
+                    ? R.string.espera_wifi : R.string.espera_red);
         } else if (ended != null) {
             // la cola ya se vacio: el aviso dice como termino, y se puede cerrar
             boolean fallo = Task.ERROR.equals(ended.state);
@@ -594,6 +650,60 @@ public class DownloadService extends Service {
     private int flags() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 ? PendingIntent.FLAG_IMMUTABLE : 0;
+    }
+
+    /**
+     * Aviso suelto por archivo terminado, ademas del permanente de la cola: es lo que
+     * hace util bajar algo con la app cerrada. El toque abre el archivo con el intent que
+     * ya usa el historial (FileProvider + permiso temporario), por eso no necesita rutas.
+     * Se puede apagar en Ajustes para las colas largas.
+     */
+    private void notifyDone(Task task) {
+        if (!Net.announce(this)) {
+            return;
+        }
+        Uri uri = Storage.shareUri(this, task.path);
+        if (uri == null) {
+            return;
+        }
+        int id = ANNOUNCE_BASE + ANNOUNCE.getAndIncrement() % 500;
+        // el intent lleva destino explicito: desde un aviso, Android 10+ no deja arrancar
+        // una intent implicita, y MainActivity ya sabe abrir el archivo con esta extra
+        Intent open = new Intent(this, MainActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(MainActivity.EXTRA_OPEN, uri)
+                .putExtra(MainActivity.EXTRA_OPEN_TYPE, Storage.typeOf(task.path))
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        PendingIntent content = PendingIntent.getActivity(this, id, open, flags());
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_DONE)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setContentTitle(getString(R.string.notif_titulo_listo))
+                .setContentText(Storage.nameOf(task.path))
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(Storage.nameOf(task.path)))
+                .setContentIntent(content)
+                .setAutoCancel(true)
+                .addAction(android.R.drawable.ic_menu_share,
+                        getString(R.string.compartir), shareIntent(task, uri))
+                .build();
+        NotificationManager manager = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
+        if (manager != null) {
+            try {
+                manager.notify(id, notification);
+            } catch (Exception e) {
+                Logs.append(null, "error aviso terminado: " + e);
+            }
+        }
+    }
+
+    private PendingIntent shareIntent(Task task, Uri uri) {
+        Intent share = new Intent(Intent.ACTION_SEND)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .setType(Storage.typeOf(task.path))
+                .putExtra(Intent.EXTRA_STREAM, uri);
+        return PendingIntent.getActivity(this, task.id.hashCode(),
+                Intent.createChooser(share, getString(R.string.compartir)), flags());
     }
 
     private void updateNotification() {

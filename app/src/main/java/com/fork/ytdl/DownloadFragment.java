@@ -147,6 +147,17 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         if (reading) {
             return;
         }
+        java.util.List<String> batch = allUrls(typed);
+        if (batch.size() > 1) {
+            // Nadie escribe dos links de a uno: si hay varios en el texto, se ofrecen todos.
+            askBatch(batch);
+            return;
+        }
+        if (looksLikeList(url)) {
+            // "list=" y /playlist pueden venir pegados a un video suelto: hay que preguntar.
+            probeList(url);
+            return;
+        }
         if (binding.btnFmtMp4.isChecked()) {
             // la resolucion elegida en Ajustes; si esta guardado "Solo audio" se usa la mejor
             Context context = requireContext();
@@ -219,6 +230,133 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
                         (dialog, which) -> enqueue(url, Quality.saved(context),
                                 Quality.savedLabel(context)))
                 .show();
+    }
+
+    /** Todos los links del texto, sin repetir, con un techo para pegadas absurdas. */
+    private static java.util.List<String> allUrls(String text) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        java.util.regex.Matcher matcher = HTTP.matcher(text == null ? "" : text);
+        while (matcher.find() && out.size() < 20) {
+            String url = matcher.group();
+            if (!out.contains(url)) {
+                out.add(url);
+            }
+        }
+        return out;
+    }
+
+    private void askBatch(final java.util.List<String> urls) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.multilink_titulo)
+                .setMessage(getString(R.string.multilink_mensaje, urls.size()))
+                .setPositiveButton(getString(R.string.multilink_todos, urls.size()),
+                        (dialog, which) -> enqueueAll(urls))
+                .setNegativeButton(R.string.multilink_unico, (dialog, which) -> {
+                    binding.urlInput.setText(urls.get(0));
+                    add();
+                })
+                .setNeutralButton(R.string.clipboard_descartar, null)
+                .show();
+    }
+
+    /**
+     * Varios links entran con la calidad que ya esta guardada en Ajustes: leer los
+     * formatos de cada video uno por uno antes de empezar seria media hora de espera,
+     * y el que pega una lista lo que quiere es que bajen. Con "Solo audio" elegido se
+     * usa la calidad de audio, igual que con un link suelto.
+     */
+    private void enqueueAll(java.util.List<String> urls) {
+        Context context = requireContext();
+        String[] fmt = savedQuality(context);
+        for (String url : urls) {
+            DownloadService.enqueue(context, url, fmt[0], fmt[1]);
+        }
+        binding.urlInput.setText("");
+        Toast.makeText(context, getString(R.string.multilink_ok, urls.size()),
+                Toast.LENGTH_SHORT).show();
+        scrollToNew();
+    }
+
+    /** fmt[0] = especificacion para el motor, fmt[1] = etiqueta corta para la fila. */
+    private String[] savedQuality(Context context) {
+        if (binding.btnFmtMp3.isChecked()) {
+            return new String[]{Quality.savedAudio(context),
+                    Quality.savedAudioLabel(context)};
+        }
+        String spec = Quality.savedVideo(context);
+        return new String[]{spec, Quality.label(context, spec)};
+    }
+
+    // ------------------------------------------------------------------ listas
+
+    /** Basta la forma del link: si podria ser una lista se pregunta, sin leer el motor. */
+    private static final java.util.regex.Pattern LIST_HINT =
+            java.util.regex.Pattern.compile("(?i)([?&]list=|/playlist|/album/|/sets/)"
+                    + "|youtube\\.com/(feed/playlists|@[^/]+/playlists)");
+
+    private static boolean looksLikeList(String url) {
+        return url != null && LIST_HINT.matcher(url).find();
+    }
+
+    /** Lee la lista sin bajar nada; si no resulta ser una, sigue el camino normal. */
+    private void probeList(final String url) {
+        reading = true;
+        final Context app = requireContext().getApplicationContext();
+        binding.btnAdd.setEnabled(false);
+        setStatus(app.getString(R.string.lista_leyendo), true);
+        THREADS.execute(() -> {
+            Playlist.Result found;
+            try {
+                Engine.init(app);
+                found = Playlist.parse(Engine.playlist(url));
+            } catch (Exception e) {
+                Logs.append(null, "lista: " + e);
+                found = Playlist.parse(null);
+            }
+            final Playlist.Result list = found;
+            main.post(() -> {
+                reading = false;
+                if (binding == null || !isAdded()) {
+                    return;
+                }
+                binding.btnAdd.setEnabled(true);
+                setStatus("", false);
+                if (list.ok) {
+                    askList(list);
+                } else {
+                    // "list=" pegado a un video suelto: no era lista, se agrega normal
+                    add();
+                }
+            });
+        });
+    }
+
+    private void askList(Playlist.Result list) {
+        Context context = requireContext();
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.lista_titulo)
+                .setMessage(getString(list.trimmed()
+                        ? R.string.lista_mensaje_corta : R.string.lista_mensaje,
+                        list.title, list.total, list.items.size()))
+                .setPositiveButton(getString(R.string.lista_todos, list.items.size()),
+                        (dialog, which) -> enqueueList(list))
+                .setNegativeButton(R.string.lista_unico, (dialog, which) -> add())
+                .setNeutralButton(R.string.clipboard_descartar, null)
+                .show();
+    }
+
+    /** La lista entra con la calidad guardada, como la pegada de varios links. */
+    private void enqueueList(Playlist.Result list) {
+        Context context = requireContext();
+        String[] fmt = savedQuality(context);
+        for (Playlist.Item item : list.items) {
+            DownloadService.enqueue(context, item.url, fmt[0], fmt[1]);
+        }
+        int added = list.items.size();
+        binding.urlInput.setText("");
+        Toast.makeText(context, getString(R.string.lista_agregadas, added),
+                Toast.LENGTH_SHORT).show();
+        scrollToNew();
     }
 
     private void choose(String url, Formats.Option option) {
