@@ -1,7 +1,6 @@
 package com.fork.ytdl;
 
 import android.content.Context;
-import android.text.format.Formatter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,20 +61,7 @@ public final class Formats {
             }
             return context.getString(R.string.fmt_normal, ext);
         }
-
-        /** Texto de una linea con el tamanho aproximado y como se consigue esa calidad. */
-        public String label(Context context) {
-            String text = shortLabel(context) + " · "
-                    + (size > 0 ? Formatter.formatShortFileSize(context, size)
-                    : context.getString(R.string.fmt_sin_medida));
-            if (mergeable()) {
-                return text + " · " + context.getString(R.string.fmt_se_junta);
-            }
-            return needsMerge()
-                    ? text + " · " + context.getString(R.string.fmt_requiere_pc) : text;
-        }
     }
-
     public static final class Result {
         public final boolean ok;
         public final String errorKind;

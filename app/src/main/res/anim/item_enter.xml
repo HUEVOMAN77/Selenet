@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Entrada de una fila de lista: aparece con la media altura y un poco apagada, y se asienta.
+  Se usa con list_enter, que reparte esta animacion con un pequeno desfase por fila.
+-->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="240"
+    android:interpolator="@android:anim/decelerate_interpolator">
+    <alpha
+        android:fromAlpha="0.55"
+        android:toAlpha="1.0" />
+    <translate
+        android:fromYDelta="7%p"
+        android:toYDelta="0" />
+</set>

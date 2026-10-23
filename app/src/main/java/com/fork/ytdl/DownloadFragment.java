@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.fork.ytdl.databinding.FragmentDownloadBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
         binding.queueList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.queueList.setAdapter(adapter);
+        Motion.calm(binding.queueList);
 
         binding.btnFmtAuto.setChecked(true);
 
@@ -152,7 +154,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
                 ? "" : binding.urlInput.getText().toString().trim();
         String url = firstUrl(typed);
         if (url == null) {
-            Toast.makeText(requireContext(), R.string.link_invalido, Toast.LENGTH_SHORT).show();
+            say(R.string.link_invalido);
             return;
         }
         if (reading) {
@@ -240,35 +242,48 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
                     showQualities(url, found);
                 } else {
                     Context context = requireContext();
-                    Toast.makeText(context, getString(R.string.fmt_fallo,
-                                    Errors.reason(context, found.errorKind, null)),
-                            Toast.LENGTH_LONG).show();
+                    say(R.string.fmt_fallo,
+                            Errors.reason(context, found.errorKind, null));
                     enqueue(url, Quality.saved(context), Quality.savedLabel(context));
                 }
             });
         });
     }
 
+    /**
+     * Hoja modal de calidades: una fila por opcion con el numero grande, el tamanho y si el
+     * telefono la arma solo. La opcion que coincide con la calidad guardada sale marcada.
+     */
     private void showQualities(String url, Formats.Result result) {
-        Context context = requireContext();
-        String[] labels = new String[result.options.size()];
-        String saved = Quality.saved(context);
-        int savedHeight = Quality.heightOf(saved);
-        for (int i = 0; i < labels.length; i++) {
-            Formats.Option option = result.options.get(i);
-            boolean remembered = option.id.equals(saved)
-                    || (savedHeight > 0 && option.height == savedHeight
-                    && (!option.needsMerge() || option.mergeable()));
-            labels[i] = option.label(context) + (remembered ? "  ✓" : "");
-        }
-        new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.fmt_titulo)
-                .setMessage(header(context, result))
-                .setItems(labels, (dialog, which) -> choose(url, result.options.get(which)))
-                .setNegativeButton(R.string.q_usar_ultima,
-                        (dialog, which) -> enqueue(url, Quality.saved(context),
-                                Quality.savedLabel(context)))
-                .show();
+        final Context context = requireContext();
+        final String saved = Quality.saved(context);
+        final int savedHeight = Quality.heightOf(saved);
+        FormatSheet.show(context, result, header(context, result),
+                option -> option.id.equals(saved)
+                        || (savedHeight > 0 && option.height == savedHeight
+                        && (!option.needsMerge() || option.mergeable())),
+                new FormatSheet.Listener() {
+                    @Override
+                    public void onPick(Formats.Option option) {
+                        if (isAdded()) {
+                            choose(url, option);
+                        }
+                    }
+
+                    @Override
+                    public void onBlocked(Formats.Option option) {
+                        if (isAdded()) {
+                            say(R.string.fmt_requiere_pc_detalle);
+                        }
+                    }
+
+                    @Override
+                    public void onUseSaved() {
+                        if (isAdded()) {
+                            enqueue(url, Quality.saved(context), Quality.savedLabel(context));
+                        }
+                    }
+                });
     }
 
     /** Todos los links del texto, sin repetir, con un techo para pegadas absurdas. */
@@ -307,12 +322,12 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     private void enqueueAll(java.util.List<String> urls) {
         Context context = requireContext();
         String[] fmt = savedQuality(context);
+        List<Task> added = new java.util.ArrayList<>();
         for (String url : urls) {
-            DownloadService.enqueue(context, url, fmt[0], fmt[1]);
+            added.add(DownloadService.enqueue(context, url, fmt[0], fmt[1]));
         }
         binding.urlInput.setText("");
-        Toast.makeText(context, getString(R.string.multilink_ok, urls.size()),
-                Toast.LENGTH_SHORT).show();
+        sayUndo(getString(R.string.multilink_ok, urls.size()), added);
         scrollToNew();
     }
 
@@ -388,20 +403,19 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     private void enqueueList(Playlist.Result list) {
         Context context = requireContext();
         String[] fmt = savedQuality(context);
+        List<Task> added = new java.util.ArrayList<>();
         for (Playlist.Item item : list.items) {
-            DownloadService.enqueue(context, item.url, fmt[0], fmt[1]);
+            added.add(DownloadService.enqueue(context, item.url, fmt[0], fmt[1]));
         }
-        int added = list.items.size();
         binding.urlInput.setText("");
-        Toast.makeText(context, getString(R.string.lista_agregadas, added),
-                Toast.LENGTH_SHORT).show();
+        sayUndo(getString(R.string.lista_agregadas, added.size()), added);
         scrollToNew();
     }
 
     private void choose(String url, Formats.Option option) {
         Context context = requireContext();
         if (option.needsMerge() && !option.mergeable()) {
-            Toast.makeText(context, R.string.fmt_requiere_pc_detalle, Toast.LENGTH_LONG).show();
+            say(R.string.fmt_requiere_pc_detalle);
             return;
         }
         String audio = option.mergeable() ? option.audio : null;
@@ -451,9 +465,10 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         } else if (Quality.heightOf(fmt) > 0 || Quality.BEST.equals(fmt)) {
             Quality.save(context, fmt, label);
         }
-        DownloadService.enqueue(context, url, fmt, audioFmt, label);
+        Task task = DownloadService.enqueue(context, url, fmt, audioFmt, label);
         binding.urlInput.setText("");
-        Toast.makeText(context, R.string.agregada, Toast.LENGTH_SHORT).show();
+        sayUndo(getString(R.string.agregada),
+                java.util.Collections.singletonList(task));
         scrollToNew();
     }
 
@@ -526,6 +541,42 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         return String.format(java.util.Locale.US, "%d:%02d", minutes, seconds);
     }
 
+    // ---------------------------------------------------------------- avisos
+
+    /**
+     * Aviso abajo, integrado con el vidrio de la pantalla. Es la barra de Material, no un
+     * Toast: por eso cabe al lado un boton de "Deshacer" y el fondo sigue la paleta del tema
+     * en lugar del cuadro gris del sistema.
+     */
+    private Snackbar bar(CharSequence text) {
+        Context context = requireContext();
+        Snackbar bar = Snackbar.make(binding.queueList, text, Snackbar.LENGTH_LONG);
+        bar.setBackgroundTint(context.getColor(R.color.glass_deep));
+        bar.setTextColor(context.getColor(R.color.on_surface));
+        bar.setActionTextColor(context.getColor(R.color.primary));
+        return bar;
+    }
+
+    private void say(int res, Object... args) {
+        if (binding == null) {
+            return;
+        }
+        bar(args.length == 0 ? getString(res) : getString(res, args)).show();
+    }
+
+    /** Aviso con deshacer: saca de la cola lo que se acaba de agregar, uno por uno si son varios. */
+    private void sayUndo(String text, List<Task> added) {
+        if (binding == null || added.isEmpty()) {
+            return;
+        }
+        final Context context = requireContext();
+        bar(text).setAction(R.string.deshacer, v -> {
+            for (Task task : added) {
+                DownloadService.withdraw(context, task);
+            }
+        }).show();
+    }
+
     private void setStatus(String text, boolean visible) {
         if (binding == null) {
             return;
@@ -559,8 +610,7 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
 
     private void clearParts() {
         int deleted = DownloadService.cleanupOrphans(requireContext());
-        Toast.makeText(requireContext(),
-                getString(R.string.part_borrados, deleted), Toast.LENGTH_SHORT).show();
+        say(R.string.part_borrados, deleted);
         refresh();
     }
 

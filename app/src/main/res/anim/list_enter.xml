@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Reparto escalonado de item_enter: cada fila entra 6 % de la duracion despues de la anterior,
+  asi la lista se arma de arriba hacia abajo en lugar de aparecer toda de golpe.
+-->
+<layoutAnimation xmlns:android="http://schemas.android.com/apk/res/android"
+    android:animation="@anim/item_enter"
+    android:animationOrder="normal"
+    android:delay="6%" />

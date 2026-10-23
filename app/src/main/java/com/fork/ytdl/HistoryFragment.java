@@ -52,6 +52,7 @@ public class HistoryFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
         binding.historyList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.historyList.setAdapter(adapter);
+        Motion.calm(binding.historyList);
         adapter.setReload(this);
         binding.histFilterGroup.check(R.id.hist_filter_all);
         binding.histFilterGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {

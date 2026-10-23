@@ -183,12 +183,18 @@ def run(task_id, url, outdir, fmt, sink, prefix=None):
             return
         state['final'] = d.get('filename') or state['final']
         state['partial'] = d.get('tmpfilename') or state['partial']
-        if status == 'finished':
-            state['percent'] = 100
-            sink.onProgress(100, '', '', state['final'], state['partial'])
-            return
         total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
         done = d.get('downloaded_bytes') or 0
+        # los numeros en crudo, aparte del texto: la fila activa dibuja con ellos la mini
+        # grafica de velocidad y dice cuanto falta. Se avisa en cada muestra del motor, no
+        # solo cuando cambia el porcentaje, para que la curva tenga resolucion.
+        rate = float(d.get('download_rate') or 0)
+        if status == 'finished':
+            state['percent'] = 100
+            sink.onBytes(done if done else total, total, 0)
+            sink.onProgress(100, '', '', state['final'], state['partial'])
+            return
+        sink.onBytes(done, total, rate)
         percent = int(done * 100 / total) if total else 0
         if percent != state['percent']:
             state['percent'] = percent

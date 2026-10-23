@@ -28,6 +28,56 @@ se instala encima sin desinstalar.
 
 ---
 
+## [1.4] — 2026-10-23 · etiqueta `v1.4-estilo.1` · **en prueba**
+
+### Added
+
+- **Color adaptativo (Material You).** `DynamicColors.applyToActivitiesIfAvailable()` en `App.java`:
+  en Android 12 y superiores las superficies y las barras toman la paleta del fondo de pantalla.
+  Se aplicó solo sobre los contenedores (`?attr/colorSurfaceContainer*` en las tarjetas y en la
+  hoja), de modo que el menta de la marca sigue quedándose en los botones de acción.
+- **Hoja modal de calidades** (`FormatSheet.java`) en lugar del cuadro de diálogo con lista de
+  texto: una fila por opción con el número de resolución grande en una pastilla, el tamaño
+  aproximado y si el teléfono la arma solo. La opción que coincide con la calidad guardada sale
+  marcada con tilde; las que requieren PC quedan atenuadas y al tocarlas explican el porqué sin
+  cerrar la hoja. Entra con las filas escalonadas (`res/anim/list_enter.xml`).
+- **Fondo ambiental** (`AmbientGlow.java`): dos halos de color que se mueven despacio detrás de
+  toda la app, a unos 11 fps, y se detienen solos cuando la vista deja de estar visible.
+- **Medidor de velocidad en la fila activa** (`Sparkline.java`): 40 muestras de la tasa real de
+  bajada dibujadas como un área pequeña, junto al texto *1,4 MB/s · quedan 12 MB*. Los números
+  usan ancho tabular (`Text.Ytdl.Cardinal`) para que no bailen mientras descargan.
+- **Movimiento entre pantallas:** fundido a través de Material 3 al cambiar de pestaña
+  (`MaterialFadeThrough`), eje compartido en Z al abrir y cerrar la búsqueda
+  (`MaterialSharedAxis`), y las filas de resultados se hunden apenas al tocarlas. Todo pasa por
+  `Motion.java`, que respeta el interruptor de animaciones del sistema.
+- **Barra de aviso con *Deshacer*** en lugar de Toast al agregar: un link, varios o una lista
+  completa. `DownloadService.enqueue()` ahora devuelve la `Task` agregada y
+  `DownloadService.withdraw()` la saca de la cola, corta el motor si ya estaba bajando y borra
+  lo escrito. También se avisó con la barra *Limpiar cortes*, el link inválido y los fallos al
+  leer formatos.
+
+### Changed
+
+- Sin animación de cambio en las listas (`Motion.calm`): la cola ya no parpadea completa cada
+  vez que llega el progreso de una descarga.
+- La barra de estado queda transparente y la app dibuja detrás de ella, para que el degradado
+  se vea continuo hasta arriba; la de navegación conserva el color de la barra inferior.
+- Las hojas inferiores usan `Theme.Ytdl.Sheet` (esquinas de 30 dp, vidrio profundo, elevación).
+- Fuera `Formats.Option.label()`, el texto de una sola línea que consumía el diálogo viejo.
+- El aviso del motor (`Sink.onBytes`) se refresca a dos veces por segundo como máximo, para que
+  la medidora no retrabaje la lista entera con cada bloque que llega.
+
+### Verificación
+
+- Compilación `debug` y `release` firmada; `sheet_formats`, `item_format` y las clases nuevas
+  (`FormatSheet`, `AmbientGlow`, `Sparkline`, `Motion`) presentes en el APK, y la cadena
+  *Deshacer* en la tabla de recursos.
+- **No probado en un teléfono.** El color adaptativo, las transiciones de ventana y el aspecto
+  de la hoja modal dependen del fabricante y de la versión de Android; igual que la unión de
+  pistas de la 1.3, hay que instalarla para verlo.
+
+---
+
 ## [1.3] — 2026-10-23 · etiqueta `v1.3-pistas.1` · **en prueba**
 
 ### Added

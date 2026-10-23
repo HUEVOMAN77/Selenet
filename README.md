@@ -535,7 +535,7 @@ tarjeta de error.
 Construida sobre `Theme.Material3.Dark.NoActionBar` con asignación explícita de los roles de
 color de Material 3: primario, secundario, terciario, error, superficie en cinco niveles de
 contenedor, variantes, colores inversos, `outline` y `scrim`. **71 tokens** en `colors.xml`,
-**154 cadenas** en `strings.xml`, **6 layouts** y **27 drawables** vectoriales.
+**259 cadenas** en `strings.xml`, **17 layouts** y **39 drawables** vectoriales.
 
 | Rol | Valor |
 |---|---|
@@ -546,10 +546,31 @@ contenedor, variantes, colores inversos, `outline` y `scrim`. **71 tokens** en `
 | Superficie | `#0A1E2C` con contenedores translúcidos y filete de vidrio `#33FFFFFF` |
 | Estados | Activo verde, completo verde claro, aviso ámbar, error rojo suave, inactivo azul grisáceo |
 
-Escala de formas: 14 dp en componentes pequeños, 22 dp en medianos y 30 dp en tarjetas.
-Barra de estado y de navegación pintadas con los colores del degradado para que no se corte.
+Escala de formas: 14 dp en componentes pequeños, 22 dp en medianos y 30 dp en tarjetas y en la
+hoja inferior. Barra de estado transparente con la app dibujando detrás de ella, para que el
+degradado llegue continuo hasta arriba; la de navegación conserva el color de la barra inferior.
 Navegación inferior de tres destinos con indicador activo; control de modo por
-`MaterialButtonToggleGroup`; selección de calidad y carpeta en diálogos de Material.
+`MaterialButtonToggleGroup`; selección de calidad en una **hoja modal** (`FormatSheet`, una fila
+por opción con la resolución, el tamaño y si el teléfono la arma sola) y carpeta en diálogo de
+Material.
+
+**Capa de color y movimiento (1.4).** `DynamicColors.applyToActivitiesIfAvailable()` lleva la
+paleta del fondo de pantalla a las superficies en Android 12 y superiores, sin mover el menta de
+los botones de acción: las tarjetas usan `?attr/colorSurfaceContainer*` y solo las cargas
+mantienen el color de marca. Detrás de todo, `AmbientGlow` dibuja dos halos que respiran a unos
+11 fps y se pausan solos cuando la vista deja de estar visible. El movimiento está centralizado
+en `Motion`: fundido a través de Material 3 entre pestañas, eje compartido en Z entre
+`MainActivity` y `SearchActivity`, hundido de la fila al tocarla y entrada escalonada de las
+listas; `Motion.calm()` apaga la animación de cambio de los `RecyclerView`, que era lo que hacía
+parpadear la cola con cada refresco de progreso. Todo se salta cuando el sistema tiene las
+animaciones desactivadas (`ValueAnimator.getDurationScale()` y
+`TRANSITION_ANIMATION_SCALE`). En la fila activa, `Sparkline` dibuja las últimas 40 muestras de
+la tasa real de bajada junto al texto *velocidad · quedan*; los números usan ancho tabular para
+no desplazarse, y el aviso del motor se pinta como máximo dos veces por segundo.
+
+Los avisos de agregar a la cola son barras de Material con **Deshacer** (un enlace, varios o una
+lista entera), apoyadas en `DownloadService.enqueue()`, que devuelve la tarea, y
+`DownloadService.withdraw()`, que la saca de la cola y corta el motor si ya había empezado.
 
 El lanzamiento del registro técnico está oculto por defecto: la interfaz normal no muestra
 consolas ni códigos.
@@ -559,7 +580,7 @@ capa `monochrome` para los temas monocromos de Android, más cinco densidades PN
 donde no existen los *adaptive icons*.
 
 **Accesibilidad:** los controles primarios son botones y tarjetas de área amplia; 17 atributos
-`contentDescription` cubren los elementos gráficos de los seis layouts. No se ha documentado una
+`contentDescription` cubren los elementos gráficos de los layouts de la app. No se ha documentado una
 auditoría formal de accesibilidad (ver [lagunas de verificación](#143-lagunas-de-verificación)).
 
 ---

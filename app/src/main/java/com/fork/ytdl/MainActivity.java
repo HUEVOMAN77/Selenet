@@ -38,6 +38,11 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         FirstRun.markWarm();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // esta pantalla es la que empuja: cuando abre la busqueda se aleja un poco y al
+        // volver vuelve a su lugar, en lugar de fundirse en plano
+        if (!Motion.reduced(this)) {
+            Motion.push(this, true);
+        }
 
         binding.bottomNav.setOnItemSelectedListener(item -> {
             show(item.getItemId());
@@ -184,6 +189,12 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         }
     }
 
+    /**
+     * Cambio de pestana con fundido a traves, que es el movimiento que Material 3 reserva para
+     * destinos paralelos: la pantalla que se va se apaga hacia la superficie y la que entra
+     * aparece desde arriba, en vez del corte seco de antes. Con las animaciones del sistema
+     * apagadas se hace el reemplazo directo, sin transicion.
+     */
     private void show(int itemId) {
         Fragment fragment;
         if (itemId == R.id.nav_historial) {
@@ -193,7 +204,11 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
         } else {
             fragment = new DownloadFragment();
         }
+        if (!Motion.reduced(this)) {
+            Motion.fadeThrough(fragment);
+        }
         getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
                 .replace(R.id.fragment_host, fragment)
                 .commit();
     }

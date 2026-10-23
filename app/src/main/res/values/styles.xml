@@ -15,7 +15,7 @@
 
     <style name="Text.Ytdl.SectionTitle" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
-        <item name="android:letterSpacing">0.18</item>
+        <item name="android:letterSpacing">0.20</item>
         <item name="android:textAllCaps">true</item>
     </style>
 
@@ -30,6 +30,20 @@
 
     <style name="Text.Ytdl.ItemMeta" parent="TextAppearance.Material3.BodySmall">
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Numeros que no cambian de ancho: porcentaje, velocidad y resto estimado -->
+    <style name="Text.Ytdl.Cardinal" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- El numero grande de la fila activa, en color de marca -->
+    <style name="Text.Ytdl.Cardinal.Accent" parent="Text.Ytdl.Cardinal">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="Text.Ytdl.State" parent="TextAppearance.Material3.LabelLarge">
@@ -92,7 +106,7 @@
     <!-- ============ TARJETAS ============ -->
     <!-- Vidrio oscuro: deja pasar el degradado de la ventana y flota sobre él. -->
     <style name="Widget.Ytdl.Card" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">@color/surface_container_low</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
         <item name="cardCornerRadius">@dimen/space_xxl</item>
         <item name="cardElevation">10dp</item>
         <item name="strokeColor">@color/glass_stroke</item>
@@ -100,7 +114,7 @@
     </style>
 
     <style name="Widget.Ytdl.Card.Tonal" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">@color/surface_container</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
         <item name="cardCornerRadius">@dimen/space_xxl</item>
         <item name="cardElevation">0dp</item>
         <item name="strokeColor">@color/glass_stroke</item>
@@ -127,7 +141,7 @@
         <item name="cardElevation">4dp</item>
         <item name="strokeColor">@color/glass_stroke</item>
         <item name="strokeWidth">1dp</item>
-        <item name="cardBackgroundColor">@color/surface_container_high</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
     </style>
 
     <!-- Circulo tonal para el icono de estado o de seccion -->

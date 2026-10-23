@@ -46,6 +46,11 @@ public class SearchActivity extends AppCompatActivity implements SearchAdapter.P
 
         binding.searchList.setLayoutManager(new LinearLayoutManager(this));
         binding.searchList.setAdapter(adapter);
+        Motion.calm(binding.searchList);
+        if (!Motion.reduced(this)) {
+            // la pantalla de busqueda llega de atras, empujada por Descargas
+            Motion.push(this, false);
+        }
         adapter.setPick(this);
 
         binding.searchBack.setOnClickListener(v -> finish());

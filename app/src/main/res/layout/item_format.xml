@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fila de la hoja de calidades: numero, que se baja, y si el telefono la arma solo. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/format_row"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_xl"
+    android:paddingEnd="@dimen/space_l">
+
+    <TextView
+        android:id="@+id/format_badge"
+        android:layout_width="58dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_format_badge"
+        android:gravity="center"
+        android:textAppearance="@style/Text.Ytdl.Cardinal"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        tools:text="1080p" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_m"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/format_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/Text.Ytdl.ItemTitle"
+            tools:text="1080p mp4 60fps" />
+
+        <TextView
+            android:id="@+id/format_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/Text.Ytdl.ItemMeta"
+            tools:text="41 MB - se junta en el telefono" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/format_mark"
+        android:layout_width="@dimen/icon_size_sm"
+        android:layout_height="@dimen/icon_size_sm"
+        android:layout_marginStart="@dimen/space_s"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check"
+        android:visibility="invisible"
+        app:tint="@color/primary" />
+</LinearLayout>

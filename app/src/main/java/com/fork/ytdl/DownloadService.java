@@ -108,19 +108,21 @@ public class DownloadService extends Service {
 
     // ---------------------------------------------------------------- acciones
 
-    public static void enqueue(Context context, String url, String fmt) {
-        enqueue(context, url, fmt, null);
+    public static Task enqueue(Context context, String url, String fmt) {
+        return enqueue(context, url, fmt, null);
     }
 
-    public static void enqueue(Context context, String url, String fmt, String label) {
-        enqueue(context, url, fmt, null, label);
+    public static Task enqueue(Context context, String url, String fmt, String label) {
+        return enqueue(context, url, fmt, null, label);
     }
 
     /**
-     * Agrega una tarea. `audioFmt`, cuando viene, es la pista de audio que hay que bajar y
-     * juntar con `fmt`: es el camino de las calidades que el sitio manda en dos pistas.
+     * Agrega una tarea y devuelve el objeto metido en la cola, para que la pantalla pueda
+     * deshacerla si el usuario se arrepiente en el momento. `audioFmt`, cuando viene, es la
+     * pista de audio que hay que bajar y juntar con `fmt`: es el camino de las calidades que
+     * el sitio manda en dos pistas.
      */
-    public static void enqueue(Context context, String url, String fmt, String audioFmt,
+    public static Task enqueue(Context context, String url, String fmt, String audioFmt,
                                String label) {
         use(context);
         Task task = new Task(url, fmt == null ? "best" : fmt);
@@ -133,6 +135,7 @@ public class DownloadService extends Service {
         persist();
         notifyUi();
         start(ACTION_RESUME);
+        return task;
     }
 
     public static void pause(Context context, Task task) {
@@ -211,6 +214,19 @@ public class DownloadService extends Service {
         Logs.forget(task);
         persist();
         notifyUi();
+    }
+
+    /**
+     * Deshace una tarea que acaba de entrar: la saca de la cola, tira abajo lo que haya
+     * empezado a escribir y le pide al motor que corte si ya estaba bajando. Es el camino del
+     * boton "Deshacer" de la barra de aviso, que tiene unos pocos segundos para actuar.
+     */
+    public static void withdraw(Context context, Task task) {
+        use(context);
+        if (Task.RUNNING.equals(task.state)) {
+            requestStop(task, Engine.CANCEL);
+        }
+        drop(task);
     }
 
     private static void requestStop(Task task, String action) {
@@ -436,6 +452,9 @@ public class DownloadService extends Service {
         task.errorKind = null;
         task.errorDetail = null;
         task.percent = 0;
+        task.downloaded = 0;
+        task.total = 0;
+        task.rate = 0;
         task.fallback = null;
         Logs.append(task, "iniciando (" + (task.attempts + 1) + ") " + task.url);
         persist();
@@ -555,6 +574,8 @@ public class DownloadService extends Service {
         private int floor;
         /** El archivo que dejo el motor; en el modo audio es el MP4 temporal de la caché. */
         private File produced;
+        /** Cuando se pinto la pantalla por ultima vez, para no hacerlo con cada muestra. */
+        private long lastPaint;
 
         Sink(Task task) {
             this.task = task;
@@ -578,6 +599,22 @@ public class DownloadService extends Service {
             if (filename != null && ceiling == 100) task.path = filename;
             if (tmpfilename != null) task.tmp = tmpfilename;
             notifyUi();
+        }
+
+        /**
+         * El motor avisa con cada muestra: solo guarda los numeros, no pinta la pantalla en
+         * cada una. La interfaz se refresca cuando cambia el porcentaje y, como mucho, dos
+         * veces por segundo, que es lo que necesita la curva para verse viva.
+         */
+        public void onBytes(long done, long totalBytes, double bytesPerSecond) {
+            task.downloaded = done;
+            task.total = totalBytes;
+            task.rate = bytesPerSecond;
+            long now = android.os.SystemClock.uptimeMillis();
+            if (now - lastPaint > 500) {
+                lastPaint = now;
+                notifyUi();
+            }
         }
 
         public void onDone(String path, long bytes) {

@@ -50,6 +50,7 @@
     <string name="clipboard_descartar">Descartar</string>
     <string name="link_invalido">Eso no parece un link.</string>
     <string name="agregada">Agregada a la cola</string>
+    <string name="deshacer">Deshacer</string>
 
     <string name="ajustes_motor">Motor de descarga</string>
     <string name="ajustes_version">Versión</string>
@@ -299,4 +300,7 @@
     <string name="estado_uniendo">Uniendo pistas…</string>
     <string name="err_union">No se pudieron juntar el video y el audio en el teléfono. Suele pasar cuando el sitio manda el video en un formato que Android no escribe en MP4. Probá con una calidad más baja, que suele venir en un solo archivo.</string>
     <string name="err_sin_video">El archivo de video no tenía ninguna pista de video. Reintentá la bajada o elegí otra calidad.</string>
+
+    <!-- FILA ACTIVA: velocidad, resto y curva -->
+    <string name="fila_quedan">quedan %1$s</string>
 </resources>

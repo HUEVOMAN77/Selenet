@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hoja modal donde se elige la calidad: titulo del video arriba, lista adentro. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/space_m">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/sheet_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginEnd="@dimen/space_xl"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/Text.Ytdl.ItemTitle"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/sheet_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="@dimen/space_xl"
+        android:alpha="0.85"
+        android:textAppearance="@style/Text.Ytdl.ItemMeta" />
+
+    <TextView
+        android:id="@+id/sheet_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginTop="@dimen/space_l"
+        android:layout_marginEnd="@dimen/space_xl"
+        android:text="@string/fmt_titulo"
+        android:textAppearance="@style/Text.Ytdl.SectionTitle" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/sheet_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:id="@+id/sheet_rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sheet_saved"
+        style="@style/Widget.Ytdl.Button.Text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_m"
+        android:layout_marginTop="@dimen/space_s"
+        android:layout_marginEnd="@dimen/space_xl"
+        android:text="@string/q_usar_ultima" />
+</LinearLayout>

@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -94,6 +95,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
             b.itemProgress.setProgress(Math.max(0, Math.min(100, task.percent)));
             b.itemState.setText(stateLabel(context, task));
             b.itemState.setTextColor(stateColor(context, task));
+            paintMeter(context, task);
             b.itemDot.setBackgroundTintList(ColorStateList.valueOf(stateColor(context, task)));
             Thumbs.show(b.itemThumb, task.url);
 
@@ -138,6 +140,35 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.Holder> {
         }
 
         /** Detalle tecnico del fallo, para copiar o pegar en un foro. */
+        /**
+         * La fila que esta bajando muestra velocidad, resto y la curva de los ultimos segundos.
+         * Las demas filas dejan la linea limpia: sin descarga en curso no hay nada que leer ahi.
+         */
+        private void paintMeter(Context context, Task task) {
+            boolean live = Task.RUNNING.equals(task.state);
+            if (!live) {
+                b.itemSpeed.setVisibility(View.GONE);
+                b.itemSpark.setVisibility(View.GONE);
+                b.itemSpark.clear();
+                return;
+            }
+            b.itemSpeed.setText(meter(context, task));
+            b.itemSpeed.setVisibility(View.VISIBLE);
+            b.itemSpark.setVisibility(View.VISIBLE);
+            b.itemSpark.track(task.id, task.rate);
+        }
+
+        /** "1,4 MB/s - quedan 12 MB", o solo la velocidad si el total no se conoce. */
+        private static String meter(Context context, Task task) {
+            String speed = android.text.format.Formatter.formatShortFileSize(context,
+                    (long) task.rate) + "/s";
+            long left = task.total > 0 ? task.total - task.downloaded : 0;
+            return left > 0
+                    ? speed + " · " + context.getString(R.string.fila_quedan,
+                    android.text.format.Formatter.formatShortFileSize(context, left))
+                    : speed;
+        }
+
         private void showError(Context context) {
             if (!Task.ERROR.equals(task.state)) {
                 String log = Logs.forTask(task);

@@ -37,6 +37,15 @@ public class Task {
     public long bytes;
     public long finishedAt;
 
+    /**
+     * Medidor de la corrida en curso, para la fila activa: bytes bajados, total esperado y
+     * velocidad instantanea en bytes por segundo. No se guardan en la cola: si la app se
+     * reinicia, la fila vuelve a hablar solo con el porcentaje.
+     */
+    public long downloaded;
+    public long total;
+    public double rate;
+
     /** Etapa visible de una descarga de audio; null mientras es una descarga comun. */
     public String stage;
 

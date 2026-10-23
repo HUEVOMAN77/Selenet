@@ -60,6 +60,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.Holder> {
         Holder(ItemSearchBinding binding) {
             super(binding.getRoot());
             b = binding;
+            Motion.press(b.getRoot());
         }
 
         void bind(Search.Item item) {
