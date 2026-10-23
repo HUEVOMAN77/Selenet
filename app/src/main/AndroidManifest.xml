@@ -50,6 +50,13 @@
             android:exported="false"
             android:theme="@style/Theme.YtdlFork" />
 
+        <!-- Busqueda dentro de la app: devuelve el link elegido al que la abrio. -->
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.YtdlFork"
+            android:windowSoftInputMode="adjustResize" />
+
         <!--
           A MainActivity llegan los "Compartir" de otras apps: ahi no tiene sentido
           mostrar el intro, lo que importa es el link.
@@ -63,6 +70,41 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!--
+              "Abrir en Selenet" desde el menu de otro navegador. Sin esto la unica forma de
+              traer un link es Compartir o pegar a mano. Se listan solo los sitios donde
+              descargar tiene sentido: si reclamaramos todo https, la app apareceria para
+              abrir cualquier pagina y daria error. No se usa android:autoVerify porque las
+              app links piden un archivo en el dominio, y ese dominio no es nuestro.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:scheme="http" />
+                <data android:host="youtube.com" />
+                <data android:host="www.youtube.com" />
+                <data android:host="m.youtube.com" />
+                <data android:host="music.youtube.com" />
+                <data android:host="youtu.be" />
+                <data android:host="instagram.com" />
+                <data android:host="www.instagram.com" />
+                <data android:host="tiktok.com" />
+                <data android:host="www.tiktok.com" />
+                <data android:host="twitter.com" />
+                <data android:host="www.twitter.com" />
+                <data android:host="x.com" />
+                <data android:host="www.x.com" />
+                <data android:host="vimeo.com" />
+                <data android:host="www.vimeo.com" />
+                <data android:host="facebook.com" />
+                <data android:host="www.facebook.com" />
+                <data android:host="soundcloud.com" />
+                <data android:host="on.soundcloud.com" />
+                <data android:host="bandcamp.com" />
+                <data android:host="*.bandcamp.com" />
             </intent-filter>
         </activity>
 

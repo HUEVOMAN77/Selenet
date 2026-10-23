@@ -43,6 +43,8 @@ public class DownloadService extends Service {
     private static final String PREFS = "cola";
     /** Hasta ahi llega la barra mientras se baja el MP4 temporal del modo audio. */
     private static final int DOWNLOAD_CEILING = 90;
+    /** Piso de espacio libre para animarse a empezar una descarga (60 MB). */
+    private static final long MIN_FREE = 60L * 1024 * 1024;
 
     private static final List<Task> QUEUE = new ArrayList<>();
     private static final List<Listener> LISTENERS = new ArrayList<>();
@@ -378,6 +380,29 @@ public class DownloadService extends Service {
         return true;
     }
 
+    /**
+     * Antes de arrancar una tarea se mira el espacio libre del volumen donde escribe la app.
+     * Un video de 1080p puede pesar 2 GB, y si el disco esta lleno la bajada se corta a la
+     * mitad dejando un .part inutil: es mejor decirlo antes y dejar la tarea marcada con el
+     * motivo, que ya tiene su texto en Ajustes. MIN_FREE es el piso: por debajo de ahi ni
+     * siquiera vale la pena empezar, porque despues hay que publicar el archivo en el destino.
+     */
+    private boolean hasRoom(Task task) {
+        long free = Storage.freeBytes(this);
+        if (free == 0 || free >= MIN_FREE) {
+            return true;
+        }
+        task.state = Task.ERROR;
+        task.errorKind = "space";
+        String libre = android.text.format.Formatter.formatShortFileSize(this, free);
+        task.errorDetail = libre;
+        Logs.append(task, "sin espacio libre: " + libre);
+        Engine.forget(task.id);
+        persist();
+        notifyUi();
+        return false;
+    }
+
     private Task nextPending() {
         synchronized (QUEUE) {
             for (Task task : QUEUE) {
@@ -391,6 +416,9 @@ public class DownloadService extends Service {
 
     private void runTask(Task task) {
         STOPS.remove(task.id);
+        if (!hasRoom(task)) {
+            return;
+        }
         task.state = Task.RUNNING;
         task.errorKind = null;
         task.errorDetail = null;

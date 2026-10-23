@@ -175,6 +175,20 @@ public final class Storage {
         return dir;
     }
 
+    /**
+     * Bytes libres en el volumen donde la app escribe primero. Todas las descargas se escriben
+     * en `engineDir` y despues se publican al destino del usuario, asi que esta es la medida
+     * que importa antes de empezar. Devuelve 0 cuando el sistema no lo puede informar: los
+     * que lo consultan tratan 0 como "no se sabe" y no bloquean nada.
+     */
+    public static long freeBytes(Context context) {
+        File dir = engineDir(context);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir.getUsableSpace();
+    }
+
     /** Las carpetas que se recorren al armar el historial: la elegida, las públicas y la de la app. */
     public static List<File> searchDirs(Context context) {
         List<File> dirs = new ArrayList<>();

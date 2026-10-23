@@ -421,12 +421,94 @@ def formats(url):
     if not items:
         items = _flatten(info)
 
+    chosen = pick(items)
+    # la hoja previa muestra lo que el extractor ya sabe del video: canal, vistas, fecha y
+    # cuanto pesa aproximadamente lo que se va a bajar. Vienen en la misma respuesta del
+    # extractor, asi que solo hay que leerlos.
     return json.dumps({
         'ok': True,
         'title': info.get('title') or '',
         'duration': int(info.get('duration') or 0),
-        'formats': pick(items),
+        'uploader': info.get('uploader') or info.get('channel') or '',
+        'views': int(info.get('view_count') or 0),
+        'date': str(info.get('upload_date') or ''),
+        'like': int(info.get('like_count') or 0),
+        'size': _size_of(chosen),
+        'formats': chosen,
     })
+
+
+def _size_of(rows):
+    """Bytes aproximados de la mejor opcion con tamano conocido; 0 si el sitio no lo informa."""
+    for row in rows:
+        if row['kind'] != 'audio' and row['size'] > 0:
+            return row['size']
+    for row in rows:
+        if row['size'] > 0:
+            return row['size']
+    return 0
+
+
+# ------------------------------------------------------------- busqueda
+
+# Techo de la busqueda: mas de 15 resultados no se pueden leer en una pantalla de celular,
+# y cada pagina de resultados le cuesta un pedido al sitio.
+_SEARCH_MAX = 15
+
+
+def search(query, limit=_SEARCH_MAX):
+    """JSON con resultados de busqueda, para no salir de la app a copiar links.
+
+    `ytsearchN:` es sintaxis del extractor, no una URL: pide la lista de resultados y
+    devuelve cada item plano (id, titulo, duracion, canal) en un solo pedido, sin resolver
+    los formatos de cada video.
+    """
+    text = (query or '').strip()
+    if not text:
+        return json.dumps({'ok': False, 'kind': 'error', 'error': 'busqueda vacia'})
+    top = max(1, min(int(limit or _SEARCH_MAX), _SEARCH_MAX))
+    options = {
+        'quiet': True,
+        'skip_download': True,
+        'extract_flat': True,
+        'noplaylist': True,
+        'socket_timeout': 20,
+        'retries': 0,
+    }
+    try:
+        with youtube_dl.YoutubeDL(options) as ydl:
+            info = ydl.extract_info('ytsearch%d:%s' % (top, text), download=False)
+    except Abort:
+        return json.dumps({'ok': False, 'kind': 'error', 'error': 'cancelado'})
+    except _error_class() as err:
+        return json.dumps({'ok': False, 'kind': _classify(str(err)), 'error': str(err)})
+    except Exception as err:
+        return json.dumps({'ok': False,
+                           'kind': _classify('%s: %s' % (type(err).__name__, err)),
+                           'error': str(err)})
+
+    base = 'https://www.youtube.com/watch?v='
+    rows = []
+    for raw in (info or {}).get('entries') or []:
+        if not raw:
+            continue
+        link = raw.get('url') or raw.get('webpage_url')
+        if not link and raw.get('id'):
+            link = base + raw['id']
+        if not link:
+            continue
+        rows.append({
+            'title': raw.get('title') or '',
+            'url': link,
+            'duration': _to_int(raw.get('duration')),
+            'uploader': raw.get('uploader') or raw.get('channel') or '',
+            'views': _to_int(raw.get('view_count')),
+        })
+
+    if not rows:
+        return json.dumps({'ok': False, 'kind': 'unavailable', 'error': 'sin resultados'})
+
+    return json.dumps({'ok': True, 'query': text, 'items': rows})
 
 
 # ------------------------------------------------------------- listas de videos

@@ -27,7 +27,10 @@ public final class Errors {
             case "forbidden":
                 return context.getString(R.string.err_bloqueado);
             case "space":
-                return context.getString(R.string.err_espacio);
+                // el detalle trae cuanto queda libre; sin ese dato, el aviso generico
+                return (detail == null || detail.isEmpty())
+                        ? context.getString(R.string.err_espacio)
+                        : context.getString(R.string.err_espacio_full, detail);
             case "format":
                 return context.getString(R.string.err_formato);
             case "reintentos":

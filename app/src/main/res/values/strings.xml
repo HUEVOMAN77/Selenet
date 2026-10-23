@@ -274,4 +274,23 @@
     <string name="lista_todos">Agregar %1$d</string>
     <string name="lista_unico">Solo este video</string>
     <string name="lista_agregadas">%1$d videos de la lista agregados</string>
+
+    <!-- BUSQUEDA -->
+    <string name="btn_buscar">Buscar un video</string>
+    <string name="buscar_pista">Qué querés bajar</string>
+    <string name="buscar_vacio">Escribí el tema, el nombre del video o el canal y toqué Buscar. Con un toque elegís la calidad; manteniendo presionado se agrega directo con la calidad guardada.</string>
+    <string name="buscando">Buscando…</string>
+    <string name="buscar_resultados">%1$d resultados para %2$s</string>
+    <string name="buscar_vistas">%1$s vistas</string>
+    <string name="buscar_sin_datos">Sin datos del video</string>
+    <string name="buscar_sin_titulo">Video sin título</string>
+
+    <!-- FICHA PREVIA -->
+    <string name="ficha_duracion">%1$s de duración</string>
+
+    <!-- ESPACIO -->
+    <string name="espacio_titulo">Puede que no entre</string>
+    <string name="espacio_mensaje">El video pesa alrededor de %1$s y tenés %2$s libres en el almacenamiento. Si la bajada se queda a mitad queda un corte inservible.\n\nPodés liberar espacio antes, o bajar una calidad más chica desde el selector.</string>
+    <string name="espacio_igual">Bajar igual</string>
+    <string name="err_espacio_full">No hay espacio libre en el teléfono (%1$s). Borrá algo o elegí una calidad más chica y reintentá.</string>
 </resources>

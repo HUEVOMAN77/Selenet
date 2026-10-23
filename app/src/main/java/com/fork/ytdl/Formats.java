@@ -66,19 +66,31 @@ public final class Formats {
         public final String errorKind;
         public final String title;
         public final int seconds;
+        /** Canal o cuenta que subio el video; vacio si el sitio no lo informa. */
+        public final String uploader;
+        public final long views;
+        /** Alta en formato YYYYMMDD del extractor, vacia cuando no viene. */
+        public final String date;
+        /** Bytes aproximados de la mejor opcion; 0 si el sitio no los dice. */
+        public final long size;
         public final List<Option> options;
 
         private Result(boolean ok, String errorKind, String title, int seconds,
+                       String uploader, long views, String date, long size,
                        List<Option> options) {
             this.ok = ok;
             this.errorKind = errorKind;
             this.title = title;
             this.seconds = seconds;
+            this.uploader = uploader;
+            this.views = views;
+            this.date = date;
+            this.size = size;
             this.options = options;
         }
 
         static Result fail(String kind) {
-            return new Result(false, kind == null ? "error" : kind, "", 0,
+            return new Result(false, kind == null ? "error" : kind, "", 0, "", 0, "", 0,
                     new ArrayList<Option>());
         }
     }
@@ -122,7 +134,9 @@ public final class Formats {
                 }
             });
             return new Result(true, null, root.optString("title", ""),
-                    root.optInt("duration"), options);
+                    root.optInt("duration"), root.optString("uploader", ""),
+                    root.optLong("views"), root.optString("date", ""),
+                    root.optLong("size"), options);
         } catch (Exception e) {
             return Result.fail("error");
         }

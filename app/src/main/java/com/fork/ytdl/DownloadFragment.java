@@ -3,6 +3,7 @@ package com.fork.ytdl;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,9 +33,14 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
     private final QueueAdapter adapter = new QueueAdapter();
     private final Handler main = new Handler(Looper.getMainLooper());
     private static final ExecutorService THREADS = Executors.newSingleThreadExecutor();
+    /** Margen que se pide ademas del archivo: la bajada escribe y despues publica. */
+    private static final long MARGIN = 80L * 1024 * 1024;
     private static String asked;
     private boolean reading;
     private CoachMarks coach;
+    /** La pantalla de busqueda devuelve el link elegido; se consume al volver. */
+    private final ActivityResultLauncher<Intent> searcher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), this::picked);
 
     @Nullable
     @Override
@@ -49,6 +58,8 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         binding.btnFmtAuto.setChecked(true);
 
         binding.btnAdd.setOnClickListener(v -> add());
+        binding.btnSearchVideo.setOnClickListener(v -> searcher.launch(
+                new Intent(requireContext(), SearchActivity.class)));
         binding.btnClearPart.setOnClickListener(v -> clearParts());
         binding.btnCopyLog.setOnClickListener(v -> copyLog());
         binding.btnSearch.setOnClickListener(v -> toggleSearch());
@@ -173,6 +184,33 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             return;
         }
         readFormats(url);
+    }
+
+    /**
+     * Vuelve de la pantalla de busqueda. Con el toque se rellena el campo y se corre el
+     * flujo normal (Auto lee calidades, MP4/MP3 usa la guardada, lista pregunta); con la
+     * pulsacion larga se agrega directo con la calidad guardada, sin preguntas.
+     */
+    private void picked(ActivityResult result) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+        Intent data = result.getData();
+        if (result.getResultCode() != android.app.Activity.RESULT_OK || data == null) {
+            return;
+        }
+        String url = data.getStringExtra(SearchActivity.EXTRA_URL);
+        if (url == null) {
+            return;
+        }
+        if (data.getBooleanExtra(SearchActivity.EXTRA_DIRECT, false)) {
+            Context context = requireContext();
+            String[] fmt = savedQuality(context);
+            enqueue(url, fmt[0], fmt[1]);
+            return;
+        }
+        binding.urlInput.setText(url);
+        add();
     }
 
     /** Lee los formatos del motor y muestra los que se pueden bajar sin merge. */
@@ -365,7 +403,37 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             Toast.makeText(context, R.string.fmt_requiere_pc_detalle, Toast.LENGTH_LONG).show();
             return;
         }
+        if (option.size > 0) {
+            // el tamano lo dio el extractor: se puede avisar antes de gastar la bajada
+            confirmSpace(option.size, () -> enqueue(url, option.id,
+                    option.shortLabel(context)));
+            return;
+        }
         enqueue(url, option.id, option.shortLabel(context));
+    }
+
+    /**
+     * Si lo que se va a bajar no entra (o no deja margen), se muestra cuanto falta y se deja
+     * decidir: a veces el que baja sabe que va a borrar algo antes. Con espacio desconocido
+     * o sin estimado no se molesta.
+     */
+    private void confirmSpace(final long needed, final Runnable go) {
+        Context context = requireContext();
+        long free = Storage.freeBytes(context);
+        if (free == 0 || needed + MARGIN <= free) {
+            go.run();   // sin dato de espacio, o entra con margen: no se molesta
+            return;
+        }
+        new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.espacio_titulo)
+                .setMessage(getString(R.string.espacio_mensaje, size(needed), size(free)))
+                .setPositiveButton(R.string.espacio_igual, (dialog, which) -> go.run())
+                .setNegativeButton(R.string.clipboard_descartar, null)
+                .show();
+    }
+
+    private String size(long bytes) {
+        return android.text.format.Formatter.formatShortFileSize(requireContext(), bytes);
     }
 
     private void enqueue(String url, String fmt, String label) {
@@ -400,18 +468,46 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         });
     }
 
+    /**
+     * La ficha del video antes de confirmar: titulo, canal, duracion, vistas, alta y cuanto
+     * ocupa maso. Todo eso lo devuelve el mismo pedido de formatos, asi que no cuesta ni un
+     * request extra y el usuario sabe que esta bajando lo que cree que esta bajando.
+     */
     private static String header(Context context, Formats.Result result) {
-        StringBuilder text = new StringBuilder();
+        StringBuilder title = new StringBuilder();
         if (!result.title.isEmpty()) {
-            text.append(result.title);
+            title.append(result.title);
+        }
+        StringBuilder facts = new StringBuilder();
+        if (!result.uploader.isEmpty()) {
+            facts.append(result.uploader);
         }
         if (result.seconds > 0) {
-            if (text.length() > 0) {
-                text.append('\n');
-            }
-            text.append(context.getString(R.string.fmt_duracion, clock(result.seconds)));
+            piece(facts, context.getString(R.string.ficha_duracion, clock(result.seconds)));
         }
-        return text.toString();
+        if (result.views > 0) {
+            piece(facts, context.getString(R.string.buscar_vistas,
+                    SearchAdapter.compact(result.views)));
+        }
+        if (result.date.length() == 8) {
+            piece(facts, result.date.substring(6, 8) + "/" + result.date.substring(4, 6)
+                    + "/" + result.date.substring(0, 4));
+        }
+        if (result.size > 0) {
+            piece(facts, android.text.format.Formatter.formatShortFileSize(context,
+                    result.size));
+        }
+        if (facts.length() == 0) {
+            return title.toString();
+        }
+        return title.length() == 0 ? facts.toString() : title + "\n" + facts;
+    }
+
+    private static void piece(StringBuilder out, String text) {
+        if (out.length() > 0) {
+            out.append(" · ");
+        }
+        out.append(text);
     }
 
     private static String clock(int total) {

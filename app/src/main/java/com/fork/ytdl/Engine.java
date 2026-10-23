@@ -95,6 +95,14 @@ public final class Engine {
         return backend.callAttr("playlist", url).toString();
     }
 
+    /** JSON con los resultados de una busqueda por texto. */
+    public static String search(String query, int limit) {
+        if (backend == null) {
+            throw new IllegalStateException("motor sin iniciar");
+        }
+        return backend.callAttr("search", query, limit).toString();
+    }
+
     public static void request(String taskId, String action) {
         if (backend == null) {
             return;

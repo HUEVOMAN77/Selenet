@@ -137,7 +137,15 @@ public class MainActivity extends AppCompatActivity implements DownloadService.L
     }
 
     private String shared(Intent intent) {
-        if (intent == null || !Intent.ACTION_SEND.equals(intent.getAction())) {
+        if (intent == null) {
+            return null;
+        }
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            // "Abrir en Selenet" desde otro navegador: el link viene limpio, sin texto al lado
+            Uri data = intent.getData();
+            return data == null ? null : data.toString();
+        }
+        if (!Intent.ACTION_SEND.equals(intent.getAction())) {
             return null;
         }
         String text = intent.getStringExtra(Intent.EXTRA_TEXT);
