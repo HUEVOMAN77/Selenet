@@ -12,6 +12,8 @@
     <string name="portada_historial_sub">Todo lo que ya está bajado, en tu carpeta o en la de la app.</string>
     <string name="portada_ajustes">Ajustes</string>
     <string name="portada_ajustes_sub">Motor, carpeta y calidad.</string>
+    <!-- El numero de build a la vista: sin esto dos APK con el mismo versionCode se ven iguales -->
+    <string name="ajustes_version_app">%1$s · build %2$d</string>
 
     <string name="seccion_cola">En cola</string>
     <string name="seccion_log">Actividad del motor</string>

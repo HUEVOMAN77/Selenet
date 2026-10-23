@@ -87,6 +87,10 @@ public class SettingsFragment extends Fragment {
 
         refreshDir();
         paintQuality();
+        // el numero de build va en el subtitulo de la pantalla: es la unica forma de
+        // comprobar desde el telefono que el APK instalado es el que se acaba de bajar
+        binding.screenSubtitle.setText(getString(R.string.ajustes_version_app,
+                BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
         binding.lblEngineHint.setText(getString(R.string.motor_sugerencia));
         binding.switchLog.setChecked(Storage.logVisible(requireContext()));
         binding.switchLog.setOnCheckedChangeListener((button, on) ->
