@@ -242,6 +242,24 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
         DownloadService.enqueue(context, url, fmt, label);
         binding.urlInput.setText("");
         Toast.makeText(context, R.string.agregada, Toast.LENGTH_SHORT).show();
+        scrollToNew();
+    }
+
+    /**
+     * La cola se agrega al final, asi que despues de meter una tarea hay que llevar la
+     * lista hasta ahi: si no, el usuario toca el boton y no ve nada nuevo en pantalla.
+     */
+    private void scrollToNew() {
+        androidx.recyclerview.widget.RecyclerView list = binding.queueList;
+        list.post(() -> {
+            if (binding == null) {
+                return;
+            }
+            int last = adapter.getItemCount() - 1;
+            if (last >= 0) {
+                list.smoothScrollToPosition(last);
+            }
+        });
     }
 
     private static String header(Context context, Formats.Result result) {
@@ -356,11 +374,57 @@ public class DownloadFragment extends Fragment implements DownloadService.Listen
             binding.queueEmptyText.setText(adapter.hasQuery()
                     ? R.string.cola_sin_resultados : R.string.cola_vacia);
         }
+        binding.screenSubtitle.setText(summary(tasks));
         binding.logText.setText(Logs.global());
         // se guarda la vista, no el binding: el post corre despues y el binding ya puede
         // estar borrado si la pestaña cambio mientras tanto
         android.widget.ScrollView scroll = binding.logScroll;
         scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
+    }
+
+    /**
+     * La bajada de la pantalla deja de ser texto fijo cuando hay cola: muestra el recuento
+     * por estado, que es lo que uno quiere saber mirando la pantalla de Descargas.
+     */
+    private CharSequence summary(List<Task> tasks) {
+        int running = 0;
+        int queued = 0;
+        int paused = 0;
+        int error = 0;
+        int done = 0;
+        for (Task task : tasks) {
+            if (Task.RUNNING.equals(task.state)) {
+                running++;
+            } else if (Task.QUEUED.equals(task.state)) {
+                queued++;
+            } else if (Task.PAUSED.equals(task.state)) {
+                paused++;
+            } else if (Task.DONE.equals(task.state)) {
+                done++;
+            } else if (Task.ERROR.equals(task.state)) {
+                error++;
+            }
+        }
+        if (tasks.isEmpty()) {
+            return getString(R.string.portada_descargas_sub);
+        }
+        StringBuilder out = new StringBuilder();
+        piece(out, running > 0, getString(R.string.resumen_descargando, running));
+        piece(out, queued > 0, getString(R.string.resumen_espera, queued));
+        piece(out, paused > 0, getString(R.string.resumen_pausadas, paused));
+        piece(out, error > 0, getString(R.string.resumen_error, error));
+        piece(out, done > 0, getString(R.string.resumen_listas, done));
+        return out;
+    }
+
+    private void piece(StringBuilder out, boolean show, String text) {
+        if (!show) {
+            return;
+        }
+        if (out.length() > 0) {
+            out.append(" · ");
+        }
+        out.append(text);
     }
 
     private static final java.util.regex.Pattern HTTP =

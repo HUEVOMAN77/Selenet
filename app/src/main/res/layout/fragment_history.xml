@@ -16,12 +16,49 @@
         android:textAppearance="@style/Text.Ytdl.ScreenTitle" />
 
     <TextView
+        android:id="@+id/history_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/space_xs"
-        android:layout_marginBottom="@dimen/space_l"
+        android:layout_marginBottom="@dimen/space_m"
         android:text="@string/portada_historial_sub"
         android:textAppearance="@style/Text.Ytdl.ScreenSubtitle" />
+
+    <!-- Filtro por tipo: el historial mezcla videos y audios y sin esto se confunde -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/hist_filter_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_l"
+        android:background="@drawable/segment_group_bg"
+        android:padding="4dp"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/hist_filter_all"
+            style="@style/Widget.Ytdl.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/fmt_todos" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/hist_filter_video"
+            style="@style/Widget.Ytdl.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hist_video" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/hist_filter_audio"
+            style="@style/Widget.Ytdl.Segment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hist_audio" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <FrameLayout
         android:layout_width="match_parent"

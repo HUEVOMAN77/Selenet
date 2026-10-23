@@ -16,6 +16,7 @@
         android:textAppearance="@style/Text.Ytdl.ScreenTitle" />
 
     <TextView
+        android:id="@+id/screen_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/space_xs"
@@ -39,6 +40,8 @@
                 style="@style/Widget.Ytdl.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:endIconContentDescription="@string/clear_link"
+                app:endIconMode="clear_text"
                 app:hintEnabled="false"
                 app:startIconDrawable="@drawable/ic_link">
 

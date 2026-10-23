@@ -16,7 +16,7 @@ import com.fork.ytdl.databinding.ActivityMainBinding;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DownloadService.Listener {
 
     private static final int ASK_STORAGE = 21;
 
@@ -41,6 +41,50 @@ public class MainActivity extends AppCompatActivity {
             binding.bottomNav.setSelectedItemId(R.id.nav_descargas);
         }
         askStorageIfNeeded();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DownloadService.addListener(this);
+        paintBadge();
+    }
+
+    @Override
+    protected void onPause() {
+        DownloadService.removeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onQueueChanged() {
+        if (binding != null) {
+            paintBadge();
+        }
+    }
+
+    /**
+     * El numero de la pestana Descargas. Sirve para ver si queda cola o se detuvo sin
+     * estar mirando esa pantalla; desaparece solo cuando la cola se vacia.
+     */
+    private void paintBadge() {
+        int active = 0;
+        for (Task task : DownloadService.snapshot()) {
+            if (Task.RUNNING.equals(task.state) || Task.QUEUED.equals(task.state)
+                    || Task.PAUSED.equals(task.state)) {
+                active++;
+            }
+        }
+        if (active == 0) {
+            binding.bottomNav.removeBadge(R.id.nav_descargas);
+            return;
+        }
+        com.google.android.material.badge.BadgeDrawable badge =
+                binding.bottomNav.getOrCreateBadge(R.id.nav_descargas);
+        badge.setNumber(active);
+        badge.setBackgroundColor(ContextCompat.getColor(this, R.color.primary));
+        badge.setBadgeTextColor(ContextCompat.getColor(this, R.color.bg_top));
+        badge.setVisible(true);
     }
 
     @Override

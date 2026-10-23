@@ -234,4 +234,15 @@
     <!-- ============ ESTADOS VACIOS ============ -->
     <string name="cola_vacia_pista">Pegá un link arriba y tocá Agregar a la cola.</string>
     <string name="hist_vacio_pista">Lo que termines aparece acá, con el tamaño y botones para abrirlo o compartirlo.</string>
+
+    <!-- ============ RESUMENES VIVOS ============ -->
+    <string name="clear_link">Borrar el link</string>
+    <string name="resumen_descargando">%1$d bajando</string>
+    <string name="resumen_espera">%1$d en espera</string>
+    <string name="resumen_pausadas">%1$d pausadas</string>
+    <string name="resumen_error">%1$d con error</string>
+    <string name="resumen_listas">%1$d listas</string>
+    <string name="hist_resumen">%1$d archivos · %2$s</string>
+    <string name="hist_filtro_vacio">En el historial no hay nada de ese tipo.</string>
+    <string name="hist_resumen_filtro">%1$d de %2$d · %3$s</string>
 </resources>
